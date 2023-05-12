@@ -5,8 +5,8 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 
-        <meta name="description" content="7DTD-Craftulator: A crafting calculator for 7 Days To Die. Tells you what you need to craft & gather, in order to craft a thing (a Bill of Materials)">
-        <title>7 Days to Die Craftulator</title>
+        <meta name="description" content="Space Engineers Blueprint Analyser: gives a breakdown of various stats for your blueprint (mass, PCU, power, ammunition usage)">
+        <title>Space Engineers Blueprint Analyser</title>
     <!--    <link rel="stylesheet" href="gh-fork-ribbon.css">-->
         <script src="se-blueprint-analyser.js" defer></script>
         <link rel="stylesheet" href="main.css">
@@ -14,17 +14,14 @@
     <body>
         <div class="banner">
             <div class="headingz">
-                <h1>7DTD Craftulator</h1>
-                <h3>A Crafting Calculator for 7 Days to Die</h3>
+                <h1>Space Engineers Blueprint Analyser</h1>
             </div>
         </div>
         <div class="content">
             <div class="content-guide">
-                <p>This single-page web app tells you what you need to gather and what you need to craft,
-                in order to craft a given item.</p>
-                <p>It needs access to a copy of the game's <code>recipes.xml</code> file (which contains all the crafting recipes in the game), as the game license prohibits including it with this app.</p>
-                <p>An upside of needing this file, is that you can provide a copy from <b>your version of the game</b>,
-                    so the crafting recipes will always be for your version.</p>
+                <p>This simple web app creates a breakdown of various important stats in the supplied blueprint.</p>
+                <p>It needs a copy of the game's data files, namely sbc <code>recipes.xml</code> file (which contains all the crafting recipes in the game), as the game license prohibits including it with this app.</p>
+                <p>A benefit of you supplying your own copy is that the crafting recipes will always be for your version.</p>
                 <p>Your <code>recipes.xml</code> file can usually be found in:
                 <code><pre>C:\Program Files (86)\Steam\steamapps\common\7 Days To Die\Data\Config\</pre></code>
                 (You can copy and paste this into the file picker)
