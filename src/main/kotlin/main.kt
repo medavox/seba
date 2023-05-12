@@ -39,7 +39,46 @@ private var recipesXmlDoc:Document? = null
     (preferably in order).
  *
  * @param name the item's name, as it appears (if it does) in `recipes.xml`
+ *
  */
+/* in the supplied blueprint file bp.sbc:
+in Definitions > ShipBlueprint > CubeGrids:
+ for each CubeGrid, (these are the grids & subgrids of the blueprint):
+    in CubeBlocks:
+        for each child:
+            take the text of <SubtypeName>,
+                1. get the human-friendly name:
+                    search for this string in the nam,e attribute of every <data> tag,
+                    and return the text property of the child <value> tag
+
+                    in all of the CubeBlocks*.sbc files:
+                        in Definitions > CubeBlocks:
+                            find the <Definition> where Id > SubtypeId matches text of SubtypeName
+                            2. get the PCU value
+                                return the text of the <PCU> tag for that <Definition>
+                            3. get the mass
+                                in the <Components> tag of this <Definition>:
+                                    create a map from each <Component> tag:
+                                        Subtype to Count
+                                            (subtypes can appear more than once, so use a counting map)
+                                    in the Components.sbc file:
+                                        in Definitions > Components:
+                                            find the <Component> where Id > SubtypeId matches text of SubtypeName from map
+                                            in that <Component>:
+                                                return the text of the <Mass> tag
+
+
+ cache the retrieved human name in a map afterwards
+ subtypeId: String to Block
+
+ Block has humanName: String, PCU: Int, and mass: Int? (because we might not have calculated it yet)
+
+ 
+ REQUIREMENTS:
+ Content/Data/Localization/MyTexts.resx (or another language)
+ Content/Data/CubeBlocks/CubeBlocks.sbc (yes, all of them)
+ Content/Data/Components.sbc (block masses and HP are calculated from their constituent parts, listed here)*/
+ 
 fun Document.recordIngredientsFor(name:String, quantity:Int) {
     val recipeCandidates:NodeList = this.querySelectorAll("recipe[name~=$name]")
     if(recipeCandidates.length == 0) {//no recipes matched
