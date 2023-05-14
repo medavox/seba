@@ -1,3 +1,5 @@
+import java.io.IOException
+
 plugins {
     kotlin("js") version "1.8.20"
 }
@@ -24,5 +26,32 @@ kotlin {
                 }
             }
         }
+    }
+}
+
+task("convertTextFilesToStrings") {
+    println(projectDir.absolutePath)
+    val resDir = "src/main/resources"
+    val cubeBlocksDir = "$resDir/CubeBlocks"
+    val cubeBlocksListing = File(cubeBlocksDir).listFiles()
+
+    val outputDir = File(rootDir, "src/main/kotlin/generated")
+    if( !outputDir.mkdirs() && !outputDir.isDirectory) {
+        throw IOException("couldn't create output dir for sbc files")
+    }
+
+    fun File.writeOut() {
+        val className = this.nameWithoutExtension.replace(".", "")
+        val fileName = className+".kt"
+        val outputFile = File(outputDir, fileName)
+        outputFile.writeText("object $className {\n\t")
+        val content = resources.text.fromFile(this).asReader().readText()
+        outputFile.appendText("val content = \"\"\"$content\"\"\"\n}")
+    }
+
+    File(resDir, "Components.sbc").writeOut()
+    File(resDir, "Localization/MyTexts.resx").writeOut()
+    for( file in cubeBlocksListing) {
+        file.writeOut()
     }
 }
