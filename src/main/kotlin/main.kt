@@ -1,3 +1,5 @@
+import generated.Components
+import generated.cubeBlocksList
 import org.w3c.dom.parsing.DOMParser
 import kotlinx.browser.document
 import kotlinx.dom.*
@@ -17,8 +19,13 @@ private val toCraft = CountingMapWithOrder<String>()
 private var blueprintXmlDoc:Document? = null
 private val dataCache: Map<String, BlockData> = mapOf()
 private val domParser: DOMParser = DOMParser()
-private val componentsFile: String = require("$resDir/Components.sbc") as String
-private val componentsXmlDoc = domParser.parseFromString(componentsFile, "text/xml")
+private val componentsXmlDoc:XMLDocument = domParser.parseFromString(Components, "text/xml") as XMLDocument
+
+val val cubeBlocksXmlDocs = cubeBlocksList.map {
+
+}
+//init
+
 
 external val __dirname: dynamic
 /*
@@ -38,38 +45,42 @@ fun quelnge() {
 }*/
 
 
-/* in the supplied blueprint file bp.sbc:
-in Definitions > ShipBlueprint > CubeGrids:
- for each CubeGrid (these are the grids & subgrids of the blueprint):
-    in CubeBlocks:
-        for each child:
-            take the text of <SubtypeName>,
-                1. get the human-friendly name:
-                    search for this string in the nam,e attribute of every <data> tag,
-                    and return the text property of the child <value> tag
+// in the supplied blueprint file bp.sbc:
+//in Definitions > ShipBlueprint > CubeGrids:
+// for each CubeGrid (these are the grids & subgrids of the blueprint):
+//    in CubeBlocks:
+//        for each child:
+//            take the text of <SubtypeName>,
+//                1. get the human-friendly name:
+//                    search for this string in the nam,e attribute of every <data> tag,
+//                    and return the text property of the child <value> tag
+//
+//                    in all of the CubeBlocks*.sbc files:
+//                        in Definitions > CubeBlocks:
+//                            find the <Definition> where Id > SubtypeId matches text of SubtypeName
+//                            2. get the PCU value
+//                                return the text of the <PCU> tag for that <Definition>
+//                            3. get the mass
+//                                in the <Components> tag of this <Definition>:
+//                                    create a map from each <Component> tag:
+//                                        Subtype to Count
+//                                            (subtypes can appear more than once, so use a counting map)
+//                                    in the Components.sbc file:
+//                                        in Definitions > Components:
+//                                            find the <Component> where Id > SubtypeId matches text of SubtypeName from map
+//                                            in that <Component>:
+//                                                return the text of the <Mass> tag
+//
+//
+// cache the retrieved human name in a map afterwards
+// subtypeId: String to Block
+//
+// block masses and HP are calculated from their constituent parts, listed in Content/Data/Components.sbc
 
-                    in all of the CubeBlocks*.sbc files:
-                        in Definitions > CubeBlocks:
-                            find the <Definition> where Id > SubtypeId matches text of SubtypeName
-                            2. get the PCU value
-                                return the text of the <PCU> tag for that <Definition>
-                            3. get the mass
-                                in the <Components> tag of this <Definition>:
-                                    create a map from each <Component> tag:
-                                        Subtype to Count
-                                            (subtypes can appear more than once, so use a counting map)
-                                    in the Components.sbc file:
-                                        in Definitions > Components:
-                                            find the <Component> where Id > SubtypeId matches text of SubtypeName from map
-                                            in that <Component>:
-                                                return the text of the <Mass> tag
+fun processBlueprint(blueprint: XMLDocument) {
 
+}
 
- cache the retrieved human name in a map afterwards
- subtypeId: String to Block
-
- block masses and HP are calculated from their constituent parts, listed in Content/Data/Components.sbc */
- 
 fun Document.recordIngredientsFor(name:String, quantity:Int) {
     val recipeCandidates:NodeList = this.querySelectorAll("recipe[name~=$name]")
     if(recipeCandidates.length == 0) {//no recipes matched
@@ -108,7 +119,7 @@ fun Document.recordIngredientsFor(name:String, quantity:Int) {
 }
 
 fun main() {
-    println("contents of components.sbc: $componentsFile")
+
     //todo: find the best-matching recipe out of those returned
     // probably using levenshtein distance or similar
     val blueprintFileInput = document.getElementById("blueprint_file_input") as HTMLInputElement
