@@ -1,6 +1,5 @@
 import org.w3c.dom.parsing.DOMParser
 import kotlinx.browser.document
-import kotlinx.browser.window
 import kotlinx.dom.*
 import org.w3c.dom.*
 import org.w3c.dom.events.KeyboardEvent
@@ -9,41 +8,39 @@ import org.w3c.files.File
 import org.w3c.files.FileReader
 import kotlin.math.min
 
-/**Keeps a count of the total amounts of each uncraftable thing we need,
- * for the requested recipe and all its intermediates*/
+external fun require(name: String): dynamic
+
+private const val resDir = "."
+
 private val uncraftables = CountingMap<String>()
-
-/**Keeps count of the items that need to be crafted.
- * Their insertion order is later used (in reverse)
- * to list the items in the order they can be crafted*/
 private val toCraft = CountingMapWithOrder<String>()
-private var lastSearchKeyPressTimeout:Int=0
-private val search = document.getElementById("surch") as HTMLInputElement
-private val button = document.getElementById("bouton") as HTMLButtonElement
-private var recipesXmlDoc:Document? = null
+private var blueprintXmlDoc:Document? = null
+private val dataCache: Map<String, BlockData> = mapOf()
+private val domParser: DOMParser = DOMParser()
+private val componentsFile: String = require("$resDir/Components.sbc") as String
+private val componentsXmlDoc = domParser.parseFromString(componentsFile, "text/xml")
 
-/**Recursively finds ALL the materials needed to make this item, including sub-assemblies.
- * 1. Adds this item to the toCraft collection
- * 2. adds any items in its recipe that aren't found in recipes.xml to the uncraftables collection
- * 3. calls this method on any items that *were* found in recipes.xml
- *     //now for the meaty bit:
-    for each ingredient required by this recipe,
-    find that ingredient's own recipe, and its recipe's ingredients, and so on.
-    recursively find all recipes and materials needed to make the chosen recipe.
-    if any ingredient can't be found in the supplied recipes.xml,
-    then we assume it's uncraftable/obtain-only.
-    along with the obvious (like engines and electrical parts),
-    this also includes materials you mine (such as ores).
-    so we'll end up with a total list of materials to acquire,
-    and a list of things to craft from them
-    (preferably in order).
- *
- * @param name the item's name, as it appears (if it does) in `recipes.xml`
- *
- */
+external val __dirname: dynamic
+/*
+val fs = require("fs")
+val path = require("path");
+
+fun quelnge() {
+    val path = path.join(
+        __dirname,
+        "..\\..\\..\\..",
+        "processedResources",
+        "js",
+        "main",
+        "test.txt"
+    )
+    println(fs.readFileSync(path, "utf8"))
+}*/
+
+
 /* in the supplied blueprint file bp.sbc:
 in Definitions > ShipBlueprint > CubeGrids:
- for each CubeGrid, (these are the grids & subgrids of the blueprint):
+ for each CubeGrid (these are the grids & subgrids of the blueprint):
     in CubeBlocks:
         for each child:
             take the text of <SubtypeName>,
@@ -71,13 +68,7 @@ in Definitions > ShipBlueprint > CubeGrids:
  cache the retrieved human name in a map afterwards
  subtypeId: String to Block
 
- Block has humanName: String, PCU: Int, and mass: Int? (because we might not have calculated it yet)
-
- 
- REQUIREMENTS:
- Content/Data/Localization/MyTexts.resx (or another language)
- Content/Data/CubeBlocks/CubeBlocks.sbc (yes, all of them)
- Content/Data/Components.sbc (block masses and HP are calculated from their constituent parts, listed here)*/
+ block masses and HP are calculated from their constituent parts, listed in Content/Data/Components.sbc */
  
 fun Document.recordIngredientsFor(name:String, quantity:Int) {
     val recipeCandidates:NodeList = this.querySelectorAll("recipe[name~=$name]")
@@ -114,49 +105,37 @@ fun Document.recordIngredientsFor(name:String, quantity:Int) {
         this.recordIngredientsFor(ingredient.attributes["name"]!!.value,
                 ingredient.attributes["count"]!!.value.toInt() * quantity)
     }
-
 }
 
 fun main() {
+    println("contents of components.sbc: $componentsFile")
     //todo: find the best-matching recipe out of those returned
     // probably using levenshtein distance or similar
-    val recipesFileInput = document.getElementById("recipes_file_input") as HTMLInputElement
-    println("slekt: $recipesFileInput")
+    val blueprintFileInput = document.getElementById("blueprint_file_input") as HTMLInputElement
+    println("blueprint file input: $blueprintFileInput")
 
     //once the user provides a recipes.xml,
     // load its contents and enable the rest of the page UI
-    recipesFileInput.addEventListener("change", { event ->
-        val foyl:File = event.target.asDynamic().files[0] as File
+    blueprintFileInput.addEventListener("change", { event ->
+        val blueprint:File = event.target.asDynamic().files[0] as File
 
-        println("foil: ${foyl.name}; size: ${foyl.size}")
+        println("foil: ${blueprint.name}; size: ${blueprint.size}")
         val fr = FileReader()
-        fr.readAsText(foyl)
+        fr.readAsText(blueprint)
         fr.onload = { loadedEvent ->
-            recipesXmlDoc = DOMParser().parseFromString(loadedEvent.target.asDynamic().result as String,
+            blueprintXmlDoc = domParser.parseFromString(loadedEvent.target.asDynamic().result as String,
                     "text/xml")
-            //xmlDoc.visitItem("vehicle", 1)
-            search.removeAttribute("disabled")
-            button.removeAttribute("disabled")
-            search.setAttribute("placeholder", "what would you like to craft?")
+            Unit //it's not redundant, kotlin/js is just doopid
         }
     })
-
-    //debounces the keyboard input: only calls the function that displays the search suggestions,
-    //when 150ms have passed since the last keystroke
-    search.onkeyup = {
-        window.clearTimeout(lastSearchKeyPressTimeout)
-        lastSearchKeyPressTimeout = window.setTimeout(::searchKeyInput, 150, it)
-        Unit
-    }
-
-    button.onclick = ::onSubmitPressed
+    //onSubmitPressed()
 }
 
 /**called when the user presses the button to initiate the search*/
-fun onSubmitPressed(it:MouseEvent) {
+fun onSubmitPressed(it: MouseEvent) {
     toCraft.clear()
     uncraftables.clear()
-    recipesXmlDoc?.recordIngredientsFor(search.value, 1)
+    //blueprintXmlDoc?.recordIngredientsFor(search.value, 1)
     val craftablesUi = document.getElementById("craftables") as HTMLTableElement
     val uncraftablesUi = document.getElementById("uncraftables") as HTMLTableElement
     uncraftablesUi.clear()
@@ -195,26 +174,26 @@ fun onSubmitPressed(it:MouseEvent) {
     (document.getElementById("results") as HTMLDivElement).addClass("vizzibull")
 }
 
-fun searchKeyInput(ke:KeyboardEvent) {
-    if(search.value.length < 2) {
+fun searchKeyInput(ke: KeyboardEvent) {
+/*    if(search.value.length < 2) {
         return
-    }
-    println("search value:"+search.value)
+    }*/
+    //println("search value:"+search.value)
     val sugs = document.getElementById("suggestions") as HTMLDivElement
     sugs.addClass("vizzibull")
     if(sugs.hasChildNodes()) {
         sugs.clear()
     }
-    recipesXmlDoc.let { xml ->
+    blueprintXmlDoc.let { xml ->
         if(xml != null) {
-            val cands = xml.getElementsByTagName("recipe").asList().filter { el ->
+/*            val cands = xml.getElementsByTagName("recipe").asList().filter { el ->
                 el.attributes["name"]?.value?.toLowerCase()?.contains(search.value.toLowerCase()) ?: false
-            }
+            }*/
 //            print("candidates: ")
 //            cands.forEach { println(it.asString()) }
             var i = 0
             //show no more than 6 suggestions
-            while(i < min(6, cands.size)) {
+/*            while(i < min(6, cands.size)) {
                 cands[i].getAttribute("name")?.let {recipe ->
                     sugs.appendElement("a") {
                         this.appendText(recipe)
@@ -225,7 +204,7 @@ fun searchKeyInput(ke:KeyboardEvent) {
                     }
                     i++
                 }
-            }
+            }*/
         }
     }
 
