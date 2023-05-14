@@ -40,18 +40,24 @@ task("convertTextFilesToStrings") {
         throw IOException("couldn't create output dir for sbc files")
     }
 
-    fun File.writeOut() {
+    fun File.writeOut(): String {
+        if(!this.exists()) {
+            throw IOException("file not found: ${this.absolutePath}")
+        }
         val className = this.nameWithoutExtension.replace(".", "")
-        val fileName = className+".kt"
+        val fileName = "$className.kt"
         val outputFile = File(outputDir, fileName)
-        outputFile.writeText("object $className {\n\t")
         val content = resources.text.fromFile(this).asReader().readText()
-        outputFile.appendText("val content = \"\"\"$content\"\"\"\n}")
+        outputFile.writeText("package generated\nval $className = \"\"\"$content\"\"\"\n")
+        return className
     }
 
+    val cubeBlocksList = File(outputDir, "CubeBlocksList.kt")
     File(resDir, "Components.sbc").writeOut()
     File(resDir, "Localization/MyTexts.resx").writeOut()
+    cubeBlocksList.writeText("package generated\nval cubeBlocksList = listOf(Components, MyTexts, ")
     for( file in cubeBlocksListing) {
-        file.writeOut()
+        cubeBlocksList.appendText(" ${file.writeOut()},")
     }
+    cubeBlocksList.appendText(")")
 }
