@@ -5,5 +5,7 @@
 data class BlockData(
     val pcu: Int,
     val displayName: String,
+    val type: String,
     val subtypeId: String,
+    //val components: CountingMap<String>//TODO
 )
