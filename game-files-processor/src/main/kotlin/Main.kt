@@ -7,7 +7,7 @@ import org.jsoup.nodes.Element
 private val allBlockData: MutableList<BlockData> = mutableListOf()
 private val localisationStringsMappings = mutableMapOf<String, String>()
 private val powerTags = mutableSetOf<String>()
-private val components = mutableMapOf<String, Int>()
+private val components = mutableMapOf<String, Double>()
 
 /**Blocks in CubeBlocks_Armor_2 are missing their PCU entry. But in the game it's 1. So just return 1*/
 fun Element.getPcuWithFallbackForArmor2(file: String, subtypeId: String): Int? {
@@ -33,12 +33,12 @@ fun initComponents() {
         val name = entry.getElementsByTag("SubtypeId")
             .firstOrNull()?.ownText()?: throw Exception("couldn't find component subtypeId")
         val mass = entry.getElementsByTag("Mass")
-            .firstOrNull()?.ownText()?.toInt()?: throw Exception("couldn't get mass for $name")
+            .firstOrNull()?.ownText()?.toDouble()?: throw Exception("couldn't get mass for $name")
         components[name] = mass
     }
 }
 
-fun initLocalisationStringMappings() {
+fun initLocalisation() {
     val doc = Jsoup.parse(MyTexts).root()
     val entries = doc.getElementsByTag("data")
     println("i18n entries: ${entries.size}")
@@ -59,7 +59,8 @@ fun initCubeBlockDefinitions() {
     }
 
     for((fileName, definitionsFile) in cubeBlocksXmlDocs) {
-        val blockDefs: Element = definitionsFile.select("Definitions>CubeBlocks").firstOrNull()?: throw Exception ("Block defs not found")
+        val blockDefs: Element = definitionsFile.select("Definitions>CubeBlocks")
+            .firstOrNull()?: throw Exception ("Block defs not found")
         //println("${blockDefs.children().size} block defs in $file")
         for (block in blockDefs.children()) {
             block.children().toList().filter {
@@ -68,8 +69,10 @@ fun initCubeBlockDefinitions() {
                 powerTags.add(it.tagName())
             }
             //I thought I could uniquely identify all blocks by just their subtypeid, but no
-            val subtypeId = block.getElementsByTag("SubtypeId").firstOrNull()?: throw Exception("couldn't find subtype id in $fileName")
-            val typeId = block.getElementsByTag("TypeId").firstOrNull()?: throw Exception("couldn't find type id in $fileName")
+            val subtypeId = block.getElementsByTag("SubtypeId")
+                .firstOrNull()?: throw Exception("couldn't find subtype id in $fileName")
+            val typeId = block.getElementsByTag("TypeId")
+                .firstOrNull()?: throw Exception("couldn't find type id in $fileName")
             val displayName = block.getElementsByTag("DisplayName").firstOrNull()
             if(displayName == null) {
                 println("WARNING: couldn't find DisplayName for '${subtypeId.ownText()}' in $fileName")
@@ -81,19 +84,29 @@ fun initCubeBlockDefinitions() {
                 println("WARNING: couldn't find PCU for '${typeId.ownText()}/${subtypeId.ownText()}/$humanName' in $fileName")
                 continue
             }
+
+            val componentsRaw = block.getElementsByTag("Components").firstOrNull()?.children()?:
+                throw Exception("couldn't find Components for '${typeId.ownText()}/${subtypeId.ownText()}/$humanName' in $fileName")
+
+            val components:Map<String, Int> = componentsRaw.associate { component ->
+                component.attr("Subtype") to component.attr("Count").toInt()
+            }
+
             allBlockData.add(BlockData(
                 type = typeId.ownText(),
                 subtypeId = subtypeId.ownText(),
                 pcu = pcu,
                 displayName = displayName.ownText(),
+                humanName = humanName,
+                components = CountingMap(components.toMutableMap())
             ))
         }
     }
 }
 
 fun main() {
-    /*initLocalisationStringMappings()
-    initCubeBlockDefinitions()*/
+    initLocalisation()
+    initCubeBlockDefinitions()
     initComponents()
     println("all block data:"+allBlockData.size)
     println("power tags: $powerTags")

@@ -7,5 +7,6 @@ data class BlockData(
     val displayName: String,
     val type: String,
     val subtypeId: String,
-    //val components: CountingMap<String>//TODO
+    val humanName: String,
+    val components: CountingMap<String>
 )

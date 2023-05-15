@@ -1,8 +1,9 @@
 /**A Map<E, Int> where absent keys equal zero.
  * [containsKey] etc still return false, though.
  * Useful for keeping individual counts for each item in another collection.*/
-open class CountingMap<K> : MutableMap<K, Int> {
-    protected val backingMap = mutableMapOf<K, Int>()
+open class CountingMap<K>(
+    protected val backingMap: MutableMap<K, Int> = mutableMapOf<K, Int>()
+) : MutableMap<K, Int> {
     override val size: Int = backingMap.size
     override val entries: MutableSet<MutableMap.MutableEntry<K, Int>> = backingMap.entries
     override val keys: MutableSet<K> = backingMap.keys
