@@ -12,6 +12,8 @@ Content/Data/CubeBlocks/
 Content/Data/Localization/MyTexts.resx
 ```
 
+Put all of these files in `game-files-processor/src/main/resources/`.
+
 You can provide a different `MyTexts.resx` file if you would prefer the block names in another language.
 
 
