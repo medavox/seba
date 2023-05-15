@@ -16,5 +16,6 @@ Put all of these files in `game-files-processor/src/main/resources/`.
 
 You can provide a different `MyTexts.resx` file if you would prefer the block names in another language.
 
-
 Next, you need to run the `game-files-processor` module to extract from the game files only the information the web app needs.
+* make sure to run the gradle task `game-files-processor:convertTextFilesToString`
+* the run the actual main function by `nodeRun`
