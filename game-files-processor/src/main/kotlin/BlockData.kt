@@ -4,3 +4,9 @@ data class BlockData(
     val humanName: String? = null,
     val mass: Int? = null
 )
+
+//data we need from the cube block definitions:
+//display name
+//subtype id
+//pcu
+//  and mass is calculated
