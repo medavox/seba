@@ -1,4 +1,5 @@
 import generated.Components
+import generated.MyTexts
 import generated.cubeBlocksList
 import org.w3c.dom.parsing.DOMParser
 import kotlinx.browser.document
@@ -16,18 +17,23 @@ private const val resDir = "."
 
 private val uncraftables = CountingMap<String>()
 private val toCraft = CountingMapWithOrder<String>()
-private var blueprintXmlDoc:Document? = null
-private val dataCache: Map<String, BlockData> = mapOf()
+private var blueprintXmlDoc:XMLDocument? = null
+private val pcuCache: MutableMap<String, Int> = mutableMapOf()
+private val humanNameCache: MutableMap<String, String> = mutableMapOf()
+private val massCache: MutableMap<String, Int> = mutableMapOf()
+/**values are negative for consumption, positive for generation*/
+private val powerUsageCache: Map<String, Int> = mapOf()
 private val domParser: DOMParser = DOMParser()
 private val componentsXmlDoc:XMLDocument = domParser.parseFromString(Components, "text/xml") as XMLDocument
+private val humanNames:XMLDocument = domParser.parseFromString(MyTexts, "text/xml") as XMLDocument
+private val humanNameData: List<Element> = humanNames.querySelector("root")?.children?.asList() ?: throw Exception("couldn't find name data")
 
-val val cubeBlocksXmlDocs = cubeBlocksList.map {
-
+val cubeBlocksXmlDocs: List<XMLDocument> = cubeBlocksList.map {
+    domParser.parseFromString(it, "text/xml") as XMLDocument
 }
-//init
 
+//TODO: power consumption
 
-external val __dirname: dynamic
 /*
 val fs = require("fs")
 val path = require("path");
@@ -44,15 +50,50 @@ fun quelnge() {
     println(fs.readFileSync(path, "utf8"))
 }*/
 
-
 // in the supplied blueprint file bp.sbc:
+fun processBlueprint(blueprint: XMLDocument) {
+    //in Definitions > ShipBlueprint > CubeGrids:
+    val cubeGrids: Element = blueprint.querySelector("Definitions > ShipBlueprints > ShipBlueprint > CubeGrids")
+        ?: throw Exception("couldn't find CubeGrids element!")
+    println("number of grids in blueprint:"+cubeGrids.childNodes.length)
+    val mainGrid:Element = cubeGrids.firstElementChild ?: throw Exception("couldn't get first (presumably main) grid!")
+    val mainGridBlocks:List<Element> = mainGrid.children.asList().filter {
+        it.tagName == "CubeBlocks"
+    }.first().children.asList()
+    println("number of blocks in main grid:"+mainGridBlocks.size)
+    //right, now let's get to work
+    for(blockElement in mainGridBlocks) {
+
+    }
+}
+
+private fun getHumanNameFor(subtype: String): String {
+    val cachedName: String? = humanNameCache[subtype]
+    if(cachedName != null) {
+        return cachedName
+    } else {
+        val result = humanNameData.filter {
+            it.attributes.getNamedItem("name")?.value == subtype
+        }
+        if (result.isNotEmpty()) {
+            val value: String? = result[0].getElementsByTagName("value").item(0)?.textContent
+            if (value != null) {
+                humanNameCache[subtype] = value
+                return value
+            }
+        }
+        //else
+        return subtype
+    }
+}
+//in the supplied blueprint file bp.sbc:
 //in Definitions > ShipBlueprint > CubeGrids:
 // for each CubeGrid (these are the grids & subgrids of the blueprint):
 //    in CubeBlocks:
 //        for each child:
 //            take the text of <SubtypeName>,
 //                1. get the human-friendly name:
-//                    search for this string in the nam,e attribute of every <data> tag,
+//                    search for this string in the name attribute of every <data> tag,
 //                    and return the text property of the child <value> tag
 //
 //                    in all of the CubeBlocks*.sbc files:
@@ -77,9 +118,7 @@ fun quelnge() {
 //
 // block masses and HP are calculated from their constituent parts, listed in Content/Data/Components.sbc
 
-fun processBlueprint(blueprint: XMLDocument) {
 
-}
 
 fun Document.recordIngredientsFor(name:String, quantity:Int) {
     val recipeCandidates:NodeList = this.querySelectorAll("recipe[name~=$name]")
@@ -119,7 +158,6 @@ fun Document.recordIngredientsFor(name:String, quantity:Int) {
 }
 
 fun main() {
-
     //todo: find the best-matching recipe out of those returned
     // probably using levenshtein distance or similar
     val blueprintFileInput = document.getElementById("blueprint_file_input") as HTMLInputElement
@@ -130,13 +168,14 @@ fun main() {
     blueprintFileInput.addEventListener("change", { event ->
         val blueprint:File = event.target.asDynamic().files[0] as File
 
-        println("foil: ${blueprint.name}; size: ${blueprint.size}")
+        println("file: ${blueprint.name}; size: ${blueprint.size}")
         val fr = FileReader()
         fr.readAsText(blueprint)
         fr.onload = { loadedEvent ->
             blueprintXmlDoc = domParser.parseFromString(loadedEvent.target.asDynamic().result as String,
-                    "text/xml")
-            Unit //it's not redundant, kotlin/js is just doopid
+                    "text/xml") as XMLDocument
+            processBlueprint(blueprintXmlDoc!!)
+            Unit //it's not redundant because kotlin/js is being doopid
         }
     })
     //onSubmitPressed()

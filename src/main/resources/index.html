@@ -26,6 +26,20 @@
                 <code><pre>C:\Program Files (86)\Steam\steamapps\common\7 Days To Die\Data\Config\</pre></code>
                 (You can copy and paste this into the file picker)
                 </p>
+                <!--<p>
+                Linux users are far too clever and attractive to need any help finding it,
+                </p><p>
+                and Mac users should instead think about what mistakes led them to become a mac user</p>-->
+            </div>
+            <div class="content-calculator">
+                <input id="blueprint_file_input" type="file"/>
+                <div class="dropdown">
+                    <p>What do you wish to brew, witch?</p>
+                    <input id="surch" placeholder="please provide a valid recipes.xml file first" size="value" disabled>
+                    <div class="dropdown-content" id="suggestions">
+                    </div>
+                </div>
+                <button id="bouton" type="button" disabled>Craftulate!</button>
             </div>
             <div id="results">
                 <p>In order to make <a id="quantity"></a> of <a id="recipeName"></a>, you will need to gather:</p>
