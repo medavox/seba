@@ -1,12 +1,9 @@
-/**Block has humanName: String, PCU: Int, and mass: Int? (because we might not have calculated it yet)*/
+/**Data retrieved from a block's <Definition> element in one of the CubeBlock Files.
+ *
+ * other data we don't have yet:
+ * mass is calculated, and human name is another lookup*/
 data class BlockData(
     val pcu: Int,
-    val humanName: String? = null,
-    val mass: Int? = null
+    val displayName: String,
+    val subtypeId: String,
 )
-
-//data we need from the cube block definitions:
-//display name
-//subtype id
-//pcu
-//  and mass is calculated
