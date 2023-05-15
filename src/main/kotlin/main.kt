@@ -25,30 +25,12 @@ private val massCache: MutableMap<String, Int> = mutableMapOf()
 private val powerUsageCache: Map<String, Int> = mapOf()
 private val domParser: DOMParser = DOMParser()
 private val componentsXmlDoc:XMLDocument = domParser.parseFromString(Components, "text/xml") as XMLDocument
+private val allBlockDefs: MutableList<Element> = mutableListOf()
+
 private val humanNames:XMLDocument = domParser.parseFromString(MyTexts, "text/xml") as XMLDocument
 private val humanNameData: List<Element> = humanNames.querySelector("root")?.children?.asList() ?: throw Exception("couldn't find name data")
 
-val cubeBlocksXmlDocs: List<XMLDocument> = cubeBlocksList.map {
-    domParser.parseFromString(it, "text/xml") as XMLDocument
-}
-
 //TODO: power consumption
-
-/*
-val fs = require("fs")
-val path = require("path");
-
-fun quelnge() {
-    val path = path.join(
-        __dirname,
-        "..\\..\\..\\..",
-        "processedResources",
-        "js",
-        "main",
-        "test.txt"
-    )
-    println(fs.readFileSync(path, "utf8"))
-}*/
 
 // in the supplied blueprint file bp.sbc:
 fun processBlueprint(blueprint: XMLDocument) {
@@ -57,13 +39,53 @@ fun processBlueprint(blueprint: XMLDocument) {
         ?: throw Exception("couldn't find CubeGrids element!")
     println("number of grids in blueprint:"+cubeGrids.childNodes.length)
     val mainGrid:Element = cubeGrids.firstElementChild ?: throw Exception("couldn't get first (presumably main) grid!")
-    val mainGridBlocks:List<Element> = mainGrid.children.asList().filter {
-        it.tagName == "CubeBlocks"
-    }.first().children.asList()
+    val mainGridBlocks:List<Element> = mainGrid.firstChildElementWithTag("CubeBlocks").children.asList()
     println("number of blocks in main grid:"+mainGridBlocks.size)
     //right, now let's get to work
     for(blockElement in mainGridBlocks) {
+        //get human name
+        val name = blockElement.firstChildElementWithTag("SubtypeName").textContent ?: throw Exception("block has no subtype!")
+        val humanName = getHumanNameFor(name)
+        //println("human name for $name: $humanName")
 
+//        println("block data for $name: ${getBlockDataFor(name)}")
+        getBlockDataFor(name)
+
+
+        //                    in all of the CubeBlocks*.sbc files:
+//                        in Definitions > CubeBlocks:
+//                            find the <Definition> where Id > SubtypeId matches text of SubtypeName
+//                            2. get the PCU value
+//                                return the text of the <PCU> tag for that <Definition>
+//                            3. get the mass
+//                                in the <Components> tag of this <Definition>:
+//                                    create a map from each <Component> tag:
+//                                        Subtype to Count
+//                                            (subtypes can appear more than once, so use a counting map)
+//                                    in the Components.sbc file:
+//                                        in Definitions > Components:
+//                                            find the <Component> where Id > SubtypeId matches text of SubtypeName from map
+//                                            in that <Component>:
+//                                                return the text of the <Mass> tag
+    }
+}
+
+private fun Element.childElementsWithTag(tag: String): List<Element> {
+    return this.children.asList().filter {
+        println("child name: "+it.tagName)
+        it.tagName == tag
+    }
+}
+
+private fun Element.firstChildElementWithTag(tag: String): Element {
+    return this.children.asList().first {
+        it.tagName == tag
+    }
+}
+
+private fun getBlockDataFor(subtype: String): Element? /*<Definition>*/ {
+    return allBlockDefs.firstOrNull { blockDef ->
+        blockDef.childElementsWithTag("SubtypeId").first().textContent == subtype
     }
 }
 
@@ -91,14 +113,13 @@ private fun getHumanNameFor(subtype: String): String {
 // for each CubeGrid (these are the grids & subgrids of the blueprint):
 //    in CubeBlocks:
 //        for each child:
-//            take the text of <SubtypeName>,
-//                1. get the human-friendly name:
-//                    search for this string in the name attribute of every <data> tag,
-//                    and return the text property of the child <value> tag
-//
-//                    in all of the CubeBlocks*.sbc files:
-//                        in Definitions > CubeBlocks:
-//                            find the <Definition> where Id > SubtypeId matches text of SubtypeName
+//            take the text of <SubtypeName>
+//                in all of the CubeBlocks*.sbc files:
+//                    in Definitions > CubeBlocks:
+//                        find the <Definition> where Id > SubtypeId matches text of SubtypeName
+//                            1. get the human-friendly name:
+//                                search for the DisplayName in the name attribute of every <data> tag,
+//                                and return the text property of the child <value> tag
 //                            2. get the PCU value
 //                                return the text of the <PCU> tag for that <Definition>
 //                            3. get the mass
