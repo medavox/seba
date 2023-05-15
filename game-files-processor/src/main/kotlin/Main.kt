@@ -1,40 +1,33 @@
-import java.io.File
-import java.io.IOException
+import generated.cubeBlocksList
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
+import org.jsoup.nodes.Element
 
-fun convertTextFilesToStrings() {
-    println()
-    val resDir = "src/main/resources"
-    val cubeBlocksDir = "$resDir/CubeBlocks"
-    val cubeBlocksListing = File(cubeBlocksDir).listFiles()
-
-    val outputDir = File(rootDir, "src/main/kotlin/generated")
-    if( !outputDir.mkdirs() && !outputDir.isDirectory) {
-        throw IOException("couldn't create output dir for sbc files")
+private val allBlockDefs: MutableList<Element> = mutableListOf()
+private val allBlockData: MutableList<BlockData> = mutableListOf()
+fun init() {
+    val cubeBlocksXmlDocs: List<Element> = cubeBlocksList.map {
+        Jsoup.parse(it).root()
     }
-
-    fun File.writeOut(): String {
-        if(!this.exists()) {
-            throw IOException("file not found: ${this.absolutePath}")
+    for(definitionsFile in cubeBlocksXmlDocs) {
+        val blockDefs: Element = definitionsFile.select("Definitions>CubeBlocks").firstOrNull()?: throw Exception ("Block defs not found")
+        println("block defs:"+blockDefs.children().size)
+        for (block in blockDefs.children()) {
+            val subtypeId = block.getElementsByTag("SubtypeId").firstOrNull()?: throw Exception("couldn't find subtype id")
+            val pcu = block.getElementsByTag("PCU").firstOrNull()?: throw Exception("couldn't find PCU for ${block.tagName()}")
+            val displayName = block.getElementsByTag("DisplayName").firstOrNull()?: throw Exception("couldn't find DisplayName")
+            allBlockData.add(BlockData(
+                subtypeId = subtypeId.ownText(),
+                pcu = pcu.ownText().toInt(),
+                displayName = displayName.ownText()
+            ))
         }
-        val className = this.nameWithoutExtension.replace(".", "")
-        val fileName = "$className.kt"
-        val outputFile = File(outputDir, fileName)
-        val content = resources.text.fromFile(this).asReader().readText()
-        outputFile.writeText("package generated\nval $className = \"\"\"$content\"\"\"\n")
-        return className
+        allBlockDefs.addAll(blockDefs.children())
     }
-
-    val cubeBlocksList = File(outputDir, "CubeBlocksList.kt")
-    File(resDir, "Components.sbc").writeOut()
-    File(resDir, "Localization/MyTexts.resx").writeOut()
-    cubeBlocksList.writeText("package generated\nval cubeBlocksList = listOf(Components, MyTexts, ")
-    for( file in cubeBlocksListing) {
-        cubeBlocksList.appendText(" ${file.writeOut()},")
-    }
-    cubeBlocksList.appendText(")")
 }
 
-
 fun main() {
-
+    init()
+    println("all block data:"+allBlockData.size)
+    //println(allBlockDefs[451])
 }
