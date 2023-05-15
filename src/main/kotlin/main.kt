@@ -9,7 +9,6 @@ import org.w3c.dom.events.KeyboardEvent
 import org.w3c.dom.events.MouseEvent
 import org.w3c.files.File
 import org.w3c.files.FileReader
-import kotlin.math.min
 
 external fun require(name: String): dynamic
 
@@ -29,6 +28,18 @@ private val allBlockDefs: MutableList<Element> = mutableListOf()
 
 private val humanNames:XMLDocument = domParser.parseFromString(MyTexts, "text/xml") as XMLDocument
 private val humanNameData: List<Element> = humanNames.querySelector("root")?.children?.asList() ?: throw Exception("couldn't find name data")
+
+
+
+fun init() {
+    val cubeBlocksXmlDocs: List<XMLDocument> = cubeBlocksList.map {
+        domParser.parseFromString(it, "text/xml") as XMLDocument
+    }
+    for(cubeBlocksDefinitionsFile in cubeBlocksXmlDocs) {
+        val blockDefs = cubeBlocksDefinitionsFile.querySelector("Definitions>CubeBlocks")?: throw Exception ("Block defs not found")
+        allBlockDefs += blockDefs.children.asList()
+    }
+}
 
 //TODO: power consumption
 
