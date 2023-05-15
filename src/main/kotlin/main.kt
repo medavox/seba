@@ -1,6 +1,3 @@
-import generated.Components
-import generated.MyTexts
-import generated.cubeBlocksList
 import org.w3c.dom.parsing.DOMParser
 import kotlinx.browser.document
 import kotlinx.dom.*
@@ -10,36 +7,10 @@ import org.w3c.dom.events.MouseEvent
 import org.w3c.files.File
 import org.w3c.files.FileReader
 
-external fun require(name: String): dynamic
-
-private const val resDir = "."
-
-private val uncraftables = CountingMap<String>()
-private val toCraft = CountingMapWithOrder<String>()
 private var blueprintXmlDoc:XMLDocument? = null
-private val pcuCache: MutableMap<String, Int> = mutableMapOf()
-private val humanNameCache: MutableMap<String, String> = mutableMapOf()
-private val massCache: MutableMap<String, Int> = mutableMapOf()
 /**values are negative for consumption, positive for generation*/
-private val powerUsageCache: Map<String, Int> = mapOf()
 private val domParser: DOMParser = DOMParser()
-private val componentsXmlDoc:XMLDocument = domParser.parseFromString(Components, "text/xml") as XMLDocument
 private val allBlockDefs: MutableList<Element> = mutableListOf()
-
-private val humanNames:XMLDocument = domParser.parseFromString(MyTexts, "text/xml") as XMLDocument
-private val humanNameData: List<Element> = humanNames.querySelector("root")?.children?.asList() ?: throw Exception("couldn't find name data")
-
-
-
-fun init() {
-    val cubeBlocksXmlDocs: List<XMLDocument> = cubeBlocksList.map {
-        domParser.parseFromString(it, "text/xml") as XMLDocument
-    }
-    for(cubeBlocksDefinitionsFile in cubeBlocksXmlDocs) {
-        val blockDefs = cubeBlocksDefinitionsFile.querySelector("Definitions>CubeBlocks")?: throw Exception ("Block defs not found")
-        allBlockDefs += blockDefs.children.asList()
-    }
-}
 
 //TODO: power consumption
 
@@ -56,8 +27,6 @@ fun processBlueprint(blueprint: XMLDocument) {
     for(blockElement in mainGridBlocks) {
         //get human name
         val name = blockElement.firstChildElementWithTag("SubtypeName").textContent ?: throw Exception("block has no subtype!")
-        val humanName = getHumanNameFor(name)
-        //println("human name for $name: $humanName")
 
 //        println("block data for $name: ${getBlockDataFor(name)}")
         getBlockDataFor(name)
@@ -100,25 +69,6 @@ private fun getBlockDataFor(subtype: String): Element? /*<Definition>*/ {
     }
 }
 
-private fun getHumanNameFor(subtype: String): String {
-    val cachedName: String? = humanNameCache[subtype]
-    if(cachedName != null) {
-        return cachedName
-    } else {
-        val result = humanNameData.filter {
-            it.attributes.getNamedItem("name")?.value == subtype
-        }
-        if (result.isNotEmpty()) {
-            val value: String? = result[0].getElementsByTagName("value").item(0)?.textContent
-            if (value != null) {
-                humanNameCache[subtype] = value
-                return value
-            }
-        }
-        //else
-        return subtype
-    }
-}
 //in the supplied blueprint file bp.sbc:
 //in Definitions > ShipBlueprint > CubeGrids:
 // for each CubeGrid (these are the grids & subgrids of the blueprint):
@@ -158,7 +108,6 @@ fun Document.recordIngredientsFor(name:String, quantity:Int) {
         //either the entered search term is bad, or the item IS uncraftable
         //add it to the uncraftables
 
-        uncraftables[name] += quantity
         return
     }
 
@@ -172,12 +121,7 @@ fun Document.recordIngredientsFor(name:String, quantity:Int) {
 
     val ingredients:List<Element> = item.childNodes.asList().
         filter { it is Element && it.tagName == "ingredient" }.map { it as Element }
-    if(ingredients.isEmpty()) {//recipes with no ingredients are also uncraftable,
-        //rather than being craftable without any ingredients
-        uncraftables[name] += quantity
-        return
-    }
-    toCraft[name] += quantity
+
     for (ingredient in ingredients) {
         println("\t${ingredient.attributes["count"]?.value?.toInt()?.times(quantity)} " +
                 "${ingredient.attributes["name"]?.value}")
@@ -215,8 +159,6 @@ fun main() {
 
 /**called when the user presses the button to initiate the search*/
 fun onSubmitPressed(it: MouseEvent) {
-    toCraft.clear()
-    uncraftables.clear()
     //blueprintXmlDoc?.recordIngredientsFor(search.value, 1)
     val craftablesUi = document.getElementById("craftables") as HTMLTableElement
     val uncraftablesUi = document.getElementById("uncraftables") as HTMLTableElement
@@ -227,32 +169,13 @@ fun onSubmitPressed(it: MouseEvent) {
         appendElement("th") {appendText("Name")}
         appendElement("th") {appendText("Quantity")}
     }
-    for(uncraftable in uncraftables.entries) {
-        uncraftablesUi.appendElement("tr") {
-            println("mouseEvent: $it")
-            this.appendElement("td") {
-                this.appendText(uncraftable.key)
-            }
-            this.appendElement("td") {
-                this.appendText(uncraftable.value.toString())
-            }
-        }
-    }
+
     craftablesUi.appendElement("tr") {
         //<tr><th>Name</th><th>Quantity</th></tr>
         appendElement("th") {appendText("Name")}
         appendElement("th") {appendText("Quantity")}
     }
-    for(craftable in toCraft.elementsInInsertionOrder().reversed()) {
-        craftablesUi.appendElement("tr") {
-            this.appendElement("td") {
-                this.appendText(craftable)
-            }
-            this.appendElement("td") {
-                this.appendText(toCraft[craftable].toString())
-            }
-        }
-    }
+
     (document.getElementById("results") as HTMLDivElement).addClass("vizzibull")
 }
 
