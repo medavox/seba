@@ -1,4 +1,4 @@
-/src/main/resources/CubeBlocks/
-/src/main/resources/Localization/
-/src/main/resources/Components.sbc
-/src/main/kotlin/generated/
+game-files-processor/src/main/resources/CubeBlocks/
+game-files-processor/src/main/resources/Localization/
+game-files-processor/src/main/resources/Components.sbc
+game-files-processor/src/main/kotlin/generated/

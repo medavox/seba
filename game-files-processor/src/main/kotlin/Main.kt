@@ -1,31 +1,40 @@
-import androidx.compose.material.MaterialTheme
-import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.material.Button
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.application
+import java.io.File
+import java.io.IOException
 
-@Composable
-@Preview
-fun App() {
-    var text by remember { mutableStateOf("Hello, World!") }
+fun convertTextFilesToStrings() {
+    println()
+    val resDir = "src/main/resources"
+    val cubeBlocksDir = "$resDir/CubeBlocks"
+    val cubeBlocksListing = File(cubeBlocksDir).listFiles()
 
-    MaterialTheme {
-        Button(onClick = {
-            text = "Hello, Desktop!"
-        }) {
-            Text(text)
-        }
+    val outputDir = File(rootDir, "src/main/kotlin/generated")
+    if( !outputDir.mkdirs() && !outputDir.isDirectory) {
+        throw IOException("couldn't create output dir for sbc files")
     }
+
+    fun File.writeOut(): String {
+        if(!this.exists()) {
+            throw IOException("file not found: ${this.absolutePath}")
+        }
+        val className = this.nameWithoutExtension.replace(".", "")
+        val fileName = "$className.kt"
+        val outputFile = File(outputDir, fileName)
+        val content = resources.text.fromFile(this).asReader().readText()
+        outputFile.writeText("package generated\nval $className = \"\"\"$content\"\"\"\n")
+        return className
+    }
+
+    val cubeBlocksList = File(outputDir, "CubeBlocksList.kt")
+    File(resDir, "Components.sbc").writeOut()
+    File(resDir, "Localization/MyTexts.resx").writeOut()
+    cubeBlocksList.writeText("package generated\nval cubeBlocksList = listOf(Components, MyTexts, ")
+    for( file in cubeBlocksListing) {
+        cubeBlocksList.appendText(" ${file.writeOut()},")
+    }
+    cubeBlocksList.appendText(")")
 }
 
-fun main() = application {
-    Window(onCloseRequest = ::exitApplication) {
-        App()
-    }
+
+fun main() {
+
 }
