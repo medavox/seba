@@ -12,10 +12,12 @@ private var blueprintXmlDoc:XMLDocument? = null
 private val domParser: DOMParser = DOMParser()
 private val allBlockDefs: MutableList<Element> = mutableListOf()
 
-//TODO: power consumption
-
-// in the supplied blueprint file bp.sbc:
-fun processBlueprint(blueprint: XMLDocument) {
+//TODO: power consumption:
+// max power capacity
+// time til drained when everything is running at full and no generators running
+// can run indefinitely with everything on idle?
+// can we meet max power demand? (is total max output >= max demand)
+fun processBlueprint(blueprint: XMLDocument): CountingMap<String> {
     //in Definitions > ShipBlueprint > CubeGrids:
     val cubeGrids: Element = blueprint.querySelector("Definitions > ShipBlueprints > ShipBlueprint > CubeGrids")
         ?: throw Exception("couldn't find CubeGrids element!")
@@ -24,30 +26,15 @@ fun processBlueprint(blueprint: XMLDocument) {
     val mainGridBlocks:List<Element> = mainGrid.firstChildElementWithTag("CubeBlocks").children.asList()
     println("number of blocks in main grid:"+mainGridBlocks.size)
     //right, now let's get to work
+    val blockCounts = CountingMap<String>()
     for(blockElement in mainGridBlocks) {
-        //get human name
-        val name = blockElement.firstChildElementWithTag("SubtypeName").textContent ?: throw Exception("block has no subtype!")
-
-//        println("block data for $name: ${getBlockDataFor(name)}")
-        getBlockDataFor(name)
-
-
-        //                    in all of the CubeBlocks*.sbc files:
-//                        in Definitions > CubeBlocks:
-//                            find the <Definition> where Id > SubtypeId matches text of SubtypeName
-//                            2. get the PCU value
-//                                return the text of the <PCU> tag for that <Definition>
-//                            3. get the mass
-//                                in the <Components> tag of this <Definition>:
-//                                    create a map from each <Component> tag:
-//                                        Subtype to Count
-//                                            (subtypes can appear more than once, so use a counting map)
-//                                    in the Components.sbc file:
-//                                        in Definitions > Components:
-//                                            find the <Component> where Id > SubtypeId matches text of SubtypeName from map
-//                                            in that <Component>:
-//                                                return the text of the <Mass> tag
+        val subtype = blockElement.firstChildElementWithTag("SubtypeName").textContent ?: throw Exception("block has no subtype!")
+        blockCounts[subtype] += 1
+        /*val blockData = data.first {
+            it.subtypeId == subtype
+        }*/
     }
+    return blockCounts
 }
 
 private fun Element.childElementsWithTag(tag: String): List<Element> {
@@ -62,45 +49,6 @@ private fun Element.firstChildElementWithTag(tag: String): Element {
         it.tagName == tag
     }
 }
-
-private fun getBlockDataFor(subtype: String): Element? /*<Definition>*/ {
-    return allBlockDefs.firstOrNull { blockDef ->
-        blockDef.childElementsWithTag("SubtypeId").first().textContent == subtype
-    }
-}
-
-//in the supplied blueprint file bp.sbc:
-//in Definitions > ShipBlueprint > CubeGrids:
-// for each CubeGrid (these are the grids & subgrids of the blueprint):
-//    in CubeBlocks:
-//        for each child:
-//            take the text of <SubtypeName>
-//                in all of the CubeBlocks*.sbc files:
-//                    in Definitions > CubeBlocks:
-//                        find the <Definition> where Id > SubtypeId matches text of SubtypeName
-//                            1. get the human-friendly name:
-//                                search for the DisplayName in the name attribute of every <data> tag,
-//                                and return the text property of the child <value> tag
-//                            2. get the PCU value
-//                                return the text of the <PCU> tag for that <Definition>
-//                            3. get the mass
-//                                in the <Components> tag of this <Definition>:
-//                                    create a map from each <Component> tag:
-//                                        Subtype to Count
-//                                            (subtypes can appear more than once, so use a counting map)
-//                                    in the Components.sbc file:
-//                                        in Definitions > Components:
-//                                            find the <Component> where Id > SubtypeId matches text of SubtypeName from map
-//                                            in that <Component>:
-//                                                return the text of the <Mass> tag
-//
-//
-// cache the retrieved human name in a map afterwards
-// subtypeId: String to Block
-//
-// block masses and HP are calculated from their constituent parts, listed in Content/Data/Components.sbc
-
-
 
 fun Document.recordIngredientsFor(name:String, quantity:Int) {
     val recipeCandidates:NodeList = this.querySelectorAll("recipe[name~=$name]")
@@ -134,12 +82,9 @@ fun Document.recordIngredientsFor(name:String, quantity:Int) {
 }
 
 fun main() {
-    //todo: find the best-matching recipe out of those returned
-    // probably using levenshtein distance or similar
     val blueprintFileInput = document.getElementById("blueprint_file_input") as HTMLInputElement
-    println("blueprint file input: $blueprintFileInput")
 
-    //once the user provides a recipes.xml,
+    //once the user provides a blueprint,
     // load its contents and enable the rest of the page UI
     blueprintFileInput.addEventListener("change", { event ->
         val blueprint:File = event.target.asDynamic().files[0] as File
@@ -180,9 +125,7 @@ fun onSubmitPressed(it: MouseEvent) {
 }
 
 fun searchKeyInput(ke: KeyboardEvent) {
-/*    if(search.value.length < 2) {
-        return
-    }*/
+
     //println("search value:"+search.value)
     val sugs = document.getElementById("suggestions") as HTMLDivElement
     sugs.addClass("vizzibull")
@@ -226,8 +169,4 @@ private fun Node.asString():String {
         is Text -> "Text node \""+this.wholeText+"\""
         else -> "Node \"$nodeName\"=\"$nodeValue\""
     }
-}
-
-private fun Attr.asString() :String {
-    return "$name=\"$value\""
 }
