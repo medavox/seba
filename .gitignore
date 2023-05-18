@@ -2,3 +2,6 @@ game-files-processor/src/main/resources/CubeBlocks/
 game-files-processor/src/main/resources/Localization/
 game-files-processor/src/main/resources/Components.sbc
 game-files-processor/src/main/kotlin/generated/
+src/main/kotlin/BlockData.kt
+src/main/kotlin/CountingMap.kt
+src/main/kotlin/generated/
