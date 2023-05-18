@@ -6,12 +6,16 @@ import org.jsoup.nodes.Element
 import java.io.File
 import java.io.IOException
 
+private val resDonor = object{}
 val allBlockData: MutableList<BlockData> = mutableListOf()
 val localisationStrings = mutableMapOf<String, String>()
 private val powerTags = mutableSetOf<String>()
 val components = mutableMapOf<String, Double>()
 
-/**Blocks in CubeBlocks_Armor_2 are missing their PCU entry. But in the game it's 1. So just return 1*/
+var identical = 0//number of components where the xsiType is the same as the typId
+var empty = 0//number of components where the xsiType is empty
+
+/**Blocks in CubeBlocks_Armor_2 are missing their PCU entry. But in the game it's always 1. So just return 1*/
 private fun Element.getPcuWithFallbackForArmor2(file: String, subtypeId: String): Int? {
     //in future, we may have to add manually-looked-up PCU values from the game here
 /*    val manualPcuLookups = mapOf(
@@ -27,8 +31,11 @@ private fun Element.getPcuWithFallbackForArmor2(file: String, subtypeId: String)
     return pcu
 }
 
+private fun readResource(path: String): String =
+    resDonor.javaClass.getResource(path)?.readText() ?: throw IOException("file not found: $path")
+
 private fun initComponents() {
-    val doc = Jsoup.parse(Components).root()
+    val doc = Jsoup.parse(readResource("Components.sbc")).root()
     val entries = doc.getElementsByTag("Component")
     println("component entries: ${entries.size}")
     for(entry in entries) {
@@ -55,8 +62,8 @@ private fun initLocalisation() {
     }
 }
 
-private fun Map<String, Int>.calculateMass(): Double = entries.fold(0.0) { acc, elem ->
-    acc + elem.value * (components.get(elem.key) ?: 0.0)
+private fun Map<String, Int>.calculateMass(): Double = entries.fold(0.0) { acc, (name, count) ->
+    acc + count * (components[name] ?: 0.0)
 }
 
 private fun initCubeBlockDefinitions() {
@@ -99,12 +106,21 @@ private fun initCubeBlockDefinitions() {
             }
 
             val xsiType = block.attr("xsi:type")
+                .replace("Definition", "")
+                .replace("MyObjectBuilder_", "")
+
+            if(xsiType == typeId.ownText()) {
+                identical++
+            } else if(xsiType.isEmpty()) {
+                empty++
+            } else {
+                println("xsiType for $humanName is $xsiType")
+            }
 
             allBlockData.add(BlockData(
                 type = typeId.ownText(),
                 subtypeId = subtypeId.ownText(),
                 pcu = pcu,
-                displayName = displayName.ownText(),
                 humanName = humanName,
                 components = components,
                 mass = components.calculateMass(),
@@ -116,12 +132,25 @@ private fun initCubeBlockDefinitions() {
 
 
 private fun writeItAllOut() {
-    val outputDir = File(".", "src/main/kotlin/generated_data")
+    val countingMapFileName = "CountingMap.kt"
+    val blockDataFileName = "BlockData.kt"
+    val srcOutputDir = File(".", "src/main/kotlin")
+    val outputDir = File(srcOutputDir, "generated")
+    val processorSrc = File(".", "game-files-processor/src/main/kotlin")
     if( !outputDir.mkdirs() && !outputDir.isDirectory) {
         throw IOException("couldn't create output dir for sbc files")
     }
+    //copy over needed kotlin files to js module
+    val countingMapFile = File(processorSrc, countingMapFileName)
+    val blockDataFile = File(processorSrc, blockDataFileName)
+    try {
+        countingMapFile.copyTo(File(srcOutputDir, countingMapFileName))
+    } catch (_: FileAlreadyExistsException){}
+    try {
+        blockDataFile.copyTo(File(srcOutputDir, blockDataFileName))
+    } catch (_:FileAlreadyExistsException){}
     val outputFile = File(outputDir, "data.kt")
-    outputFile.writeText("package generated_data\n\n")
+    outputFile.writeText("package generated\nimport BlockData\n")
     outputFile.appendText(allBlockData.fold("val data=listOf(") { acc, blockData: BlockData ->
         "$acc$blockData, "
     }+")")
@@ -164,10 +193,12 @@ private fun writeItAllOut() {
 // then it's either a passage or ladder2, so use the
 
 fun main() {
+    initComponents()
     initLocalisation()
     initCubeBlockDefinitions()
-    initComponents()
     println("all block data:"+allBlockData.size)
+    println("number of components where the xsiType is the same as the typId: $identical")
+    println("number of components where the xsiType is empty: $empty")
     //println("power tags: $powerTags")
     writeItAllOut()
 }
