@@ -4,6 +4,7 @@ import generated.cubeBlocksList
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import java.io.File
+import java.io.FileNotFoundException
 import java.io.IOException
 
 private val resDonor = object{}
@@ -32,7 +33,7 @@ private fun Element.getPcuWithFallbackForArmor2(file: String, subtypeId: String)
 }
 
 private fun readResource(path: String): String =
-    resDonor.javaClass.getResource(path)?.readText() ?: throw IOException("file not found: $path")
+    resDonor.javaClass.getResource(path)?.readText() ?: throw FileNotFoundException("file not found: $path")
 
 private fun initComponents() {
     val doc = Jsoup.parse(readResource("Components.sbc")).root()
@@ -48,7 +49,11 @@ private fun initComponents() {
 }
 
 private fun initLocalisation() {
-    val doc = Jsoup.parse(MyTexts).root()
+    val resDir = File(".", "game-files-processor/src/main/resources")
+    val localisationFile:String = resDir.list { _, name: String ->
+        name.matches(Regex("^MyTexts.*\\.resx$"))
+    }?.first() ?: throw FileNotFoundException("couldn't find a MyTexts*.resx file in ${resDir.absolutePath}")
+    val doc = Jsoup.parse(readResource(localisationFile)).root()
     val entries = doc.getElementsByTag("data")
     println("i18n entries: ${entries.size}")
     for(entry in entries) {

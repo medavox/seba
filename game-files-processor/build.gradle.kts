@@ -54,8 +54,6 @@ task("convertTextFilesToStrings") {
     }
 
     val cubeBlocksList = File(outputDir, "CubeBlocksList.kt")
-    File(resDir, "Components.sbc").writeOut()
-    File(resDir, "Localization/MyTexts.resx").writeOut()
     cubeBlocksList.writeText("package generated\nval cubeBlocksList = mapOf<String, String>(")
     for( file in cubeBlocksListing) {
         cubeBlocksList.appendText("\"${file.nameWithoutExtension}\" to ${file.writeOut()},")
