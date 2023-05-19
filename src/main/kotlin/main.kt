@@ -110,16 +110,3 @@ fun showBreakdown(tableData:List<BlockRow>) {
 
     (document.getElementById("results") as HTMLDivElement).addClass("vizzibull")
 }
-
-private fun Node.asString():String {
-    return when(this) {
-        is Element -> {
-            "Element \"$nodeName\"; "+this.attributes.asList().
-            fold("") { acc, elem ->
-                "$acc / ${elem.asString()}"
-            }
-        }
-        is Text -> "Text node \""+this.wholeText+"\""
-        else -> "Node \"$nodeName\"=\"$nodeValue\""
-    }
-}
