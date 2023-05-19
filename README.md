@@ -22,4 +22,4 @@ You need to provide the project with some game files before compilation.
 
 2. Run `game-files-processor/src/main/kotlin/Preprocessor.kt:main()` to extract the needed info from the game files.
 
-3. Compile & run the web app with `./gradlew browserDevelopmentRun` or `./gradlew browserProductionRun`. 
+3. Compile & run the web app with `./gradlew run`, or update the live web app with `./gradlew browserProductionWebpack`. 
