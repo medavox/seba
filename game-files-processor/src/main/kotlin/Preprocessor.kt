@@ -1,4 +1,3 @@
-import generated.cubeBlocksList
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import java.io.File
@@ -21,7 +20,7 @@ private fun Element.getPcuWithFallbackForArmor2(file: String, subtypeId: String)
         "CubeBlock/DeadAstronaut" to
     )*/
     val pcu = this.getElementsByTag("PCU").firstOrNull()?.ownText()?.toInt()
-        ?: return if(file == "CubeBlocks_Armor_2") 1
+        ?: return if(file == "CubeBlocks_Armor_2.sbc") 1
 /*        else if(false) {
             null
         } */else {
@@ -111,6 +110,10 @@ private fun initCubeBlockDefinitions() {
                 continue
             }
 
+            if(typeId.ownText().contains("_")) {
+                println("weird typeId for subType '${subtypeId.ownText()}': ${typeId.ownText()}")
+            }
+
             val componentsRaw = block.getElementsByTag("Components").firstOrNull()?.children()?:
                 throw Exception("couldn't find Components for '${typeId.ownText()}/${subtypeId.ownText()}/$humanName' in $fileName")
 
@@ -127,11 +130,11 @@ private fun initCubeBlockDefinitions() {
             } else if(xsiType.isEmpty()) {
                 empty++
             } else {
-                println("xsiType for $humanName is $xsiType")
+                //println("xsiType for $humanName is $xsiType")
             }
 
             allBlockData.add(BlockData(
-                type = typeId.ownText(),
+                typeId = typeId.ownText().replace("MyObjectBuilder_", ""),
                 subtypeId = subtypeId.ownText(),
                 pcu = pcu,
                 humanName = humanName,
@@ -142,7 +145,6 @@ private fun initCubeBlockDefinitions() {
         }
     }
 }
-
 
 private fun writeItAllOut() {
     val countingMapFileName = "CountingMap.kt"
@@ -156,12 +158,10 @@ private fun writeItAllOut() {
     //copy over needed kotlin files to js module
     val countingMapFile = File(processorSrc, countingMapFileName)
     val blockDataFile = File(processorSrc, blockDataFileName)
-    try {
-        countingMapFile.copyTo(File(srcOutputDir, countingMapFileName))
-    } catch (_: FileAlreadyExistsException){}
-    try {
-        blockDataFile.copyTo(File(srcOutputDir, blockDataFileName))
-    } catch (_:FileAlreadyExistsException){}
+
+    countingMapFile.copyTo(File(srcOutputDir, countingMapFileName), overwrite = true)
+    blockDataFile.copyTo(File(srcOutputDir, blockDataFileName), overwrite = true)
+
     val outputFile = File(outputDir, "data.kt")
     outputFile.writeText("package generated\nimport BlockData\n")
     outputFile.appendText(allBlockData.fold("val data=listOf(") { acc, blockData: BlockData ->

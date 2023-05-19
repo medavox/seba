@@ -34,7 +34,7 @@
             <div class="content-calculator">
                 <input id="blueprint_file_input" type="file"/>
                 <div class="dropdown">
-                    <p>What do you wish to brew, witch?</p>
+                    <p>Was willst du?</p>
                     <input id="surch" placeholder="please provide a valid recipes.xml file first" size="value" disabled>
                     <div class="dropdown-content" id="suggestions">
                     </div>
@@ -44,12 +44,7 @@
             <div id="results">
                 <p>In order to make <a id="quantity"></a> of <a id="recipeName"></a>, you will need to gather:</p>
                 <div style="overflow-x:auto;">
-                    <table id="uncraftables">
-                    </table>
-                </div>
-                <p>And then craft the following items, in this order:</p>
-                <div style="overflow-x:auto;">
-                    <table id="craftables">
+                    <table id="breakdown">
                     </table>
                 </div>
             </div>

@@ -1,3 +1,4 @@
+import generated.data
 import org.w3c.dom.parsing.DOMParser
 import kotlinx.browser.document
 import kotlinx.dom.*
@@ -28,11 +29,26 @@ fun processBlueprint(blueprint: XMLDocument): CountingMap<String> {
     val blockCounts = CountingMap<String>()
     for(blockElement in mainGridBlocks) {
         val subtype = blockElement.firstChildElementWithTag("SubtypeName").textContent ?: throw Exception("block has no subtype!")
-        blockCounts[subtype] += 1
+        val xsiType = blockElement.attributes.get("xsi:type")?.value?.replace("MyObjectBuilder_", "")?: ""
+
+        blockCounts["$xsiType:$subtype"] += 1
         /*val blockData = data.first {
             it.subtypeId == subtype
         }*/
     }
+    val dataRows = blockCounts.map { (xsiSub, count) ->
+        println("xsisub: $xsiSub")
+        //so it looks like the xsi:Type in a blueprint ACTUALLY corresponds to the typeId
+        val block = data.first { (it.typeId+":"+it.subtypeId) == xsiSub }
+        println("${block.humanName},$count,${count * block.mass},${count * block.pcu}")
+        BlockRow(
+            name = block.humanName,
+            count = count,
+            mass = count * block.mass,
+            pcu = count * block.pcu
+            )
+    }
+    showBreakdown(dataRows.sortedBy { it.name })
     return blockCounts
 }
 
@@ -46,37 +62,6 @@ private fun Element.childElementsWithTag(tag: String): List<Element> {
 private fun Element.firstChildElementWithTag(tag: String): Element {
     return this.children.asList().first {
         it.tagName == tag
-    }
-}
-
-fun Document.recordIngredientsFor(name:String, quantity:Int) {
-    val recipeCandidates:NodeList = this.querySelectorAll("recipe[name~=$name]")
-    if(recipeCandidates.length == 0) {//no recipes matched
-        //either the entered search term is bad, or the item IS uncraftable
-        //add it to the uncraftables
-
-        return
-    }
-
-    val filtered = recipeCandidates.asList().filter {
-        it is Element && it.tagName == "recipe" }.map { it as Element }
-    //println("possible candidates for crafting this item:"+filtered.size)
-    //for now as a placeholder, select the first valid recipe in the list
-    val item: Node = filtered[0]
-
-    println("ingredients needed to craft $quantity ${(item as Element).attributes["name"]?.value}:")
-
-    val ingredients:List<Element> = item.childNodes.asList().
-        filter { it is Element && it.tagName == "ingredient" }.map { it as Element }
-
-    for (ingredient in ingredients) {
-        println("\t${ingredient.attributes["count"]?.value?.toInt()?.times(quantity)} " +
-                "${ingredient.attributes["name"]?.value}")
-        //get ingredient name and count needed
-    }
-    for (ingredient in ingredients) {
-        this.recordIngredientsFor(ingredient.attributes["name"]!!.value,
-                ingredient.attributes["count"]!!.value.toInt() * quantity)
     }
 }
 
@@ -98,67 +83,36 @@ fun main() {
             Unit //it's not redundant because kotlin/js is being doopid
         }
     })
-    //onSubmitPressed()
 }
 
 /**called when the user presses the button to initiate the search*/
-fun onSubmitPressed(it: MouseEvent) {
-    //blueprintXmlDoc?.recordIngredientsFor(search.value, 1)
-    val craftablesUi = document.getElementById("craftables") as HTMLTableElement
-    val uncraftablesUi = document.getElementById("uncraftables") as HTMLTableElement
-    uncraftablesUi.clear()
-    craftablesUi.clear()
-    uncraftablesUi.appendElement("tr") {
-        //<tr><th>Name</th><th>Quantity</th></tr>
-        appendElement("th") {appendText("Name")}
-        appendElement("th") {appendText("Quantity")}
+fun showBreakdown(tableData:List<BlockRow>) {
+    val breakdownTable = document.getElementById("breakdown") as HTMLTableElement
+    breakdownTable.clear()
+    breakdownTable.appendElement("tr") {
+        //name, count, mass, pcu
+        appendElement("th") {appendText("Name")}.addEventListener("click", {
+            showBreakdown(tableData.sortedBy { it.name })
+        })
+        appendElement("th") {appendText("Count")}.addEventListener("click", {
+            showBreakdown(tableData.sortedByDescending { it.count })
+        })
+        appendElement("th") {appendText("Mass (kg)")}.addEventListener("click", {
+            showBreakdown(tableData.sortedByDescending { it.mass })
+        })
+        appendElement("th") {appendText("PCU")}.addEventListener("click", {
+            showBreakdown(tableData.sortedByDescending { it.pcu })
+        })
     }
-
-    craftablesUi.appendElement("tr") {
-        //<tr><th>Name</th><th>Quantity</th></tr>
-        appendElement("th") {appendText("Name")}
-        appendElement("th") {appendText("Quantity")}
+    for(row in tableData) {
+        row.toHtml(breakdownTable)
     }
 
     (document.getElementById("results") as HTMLDivElement).addClass("vizzibull")
 }
 
-fun searchKeyInput(ke: KeyboardEvent) {
-
-    //println("search value:"+search.value)
-    val sugs = document.getElementById("suggestions") as HTMLDivElement
-    sugs.addClass("vizzibull")
-    if(sugs.hasChildNodes()) {
-        sugs.clear()
-    }
-    blueprintXmlDoc.let { xml ->
-        if(xml != null) {
-/*            val cands = xml.getElementsByTagName("recipe").asList().filter { el ->
-                el.attributes["name"]?.value?.toLowerCase()?.contains(search.value.toLowerCase()) ?: false
-            }*/
-//            print("candidates: ")
-//            cands.forEach { println(it.asString()) }
-            var i = 0
-            //show no more than 6 suggestions
-/*            while(i < min(6, cands.size)) {
-                cands[i].getAttribute("name")?.let {recipe ->
-                    sugs.appendElement("a") {
-                        this.appendText(recipe)
-                        this.addEventListener("click", {
-                            search.value = recipe
-                            sugs.removeClass("vizzibull")
-                        })
-                    }
-                    i++
-                }
-            }*/
-        }
-    }
-
-}
-
 private fun Node.asString():String {
-    return when(this){
+    return when(this) {
         is Element -> {
             "Element \"$nodeName\"; "+this.attributes.asList().
             fold("") { acc, elem ->

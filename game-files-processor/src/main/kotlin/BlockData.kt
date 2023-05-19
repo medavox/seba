@@ -1,10 +1,7 @@
-/**Data retrieved from a block's <Definition> element in one of the CubeBlock Files.
- *
- * other data we don't have yet:
- * mass is calculated, and human name is another lookup*/
+/**Data retrieved from a block's <Definition> element in one of the CubeBlock Files.*/
 data class BlockData(
     val pcu: Int,
-    val type: String,
+    val typeId: String,
     val subtypeId: String,
     val humanName: String,
     val components: Map<String, Int>,
@@ -13,7 +10,7 @@ data class BlockData(
 ) {
     override fun toString(): String {
         return "BlockData(pcu=$pcu,\n" +
-            "\ttype=\"$type\",\n" +
+            "\ttypeId=\"$typeId\",\n" +
             "\tsubtypeId=\"$subtypeId\",\n" +
             "\thumanName=\"$humanName\",\n" +
                 (if(xsiType.isNotEmpty()) "\txsiType=\"$xsiType\",\n" else "") +
