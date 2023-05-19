@@ -8,11 +8,10 @@ import org.w3c.files.File
 import org.w3c.files.FileReader
 
 private var blueprintXmlDoc:XMLDocument? = null
-/**values are negative for consumption, positive for generation*/
 private val domParser: DOMParser = DOMParser()
-private val allBlockDefs: MutableList<Element> = mutableListOf()
 
 //TODO: power consumption:
+//values are negative for consumption, positive for generation
 // max power capacity
 // time til drained when everything is running at full and no generators running
 // can run indefinitely with everything on idle?

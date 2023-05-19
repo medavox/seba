@@ -1,5 +1,3 @@
-import generated.Components
-import generated.MyTexts
 import generated.cubeBlocksList
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
@@ -72,9 +70,19 @@ private fun Map<String, Int>.calculateMass(): Double = entries.fold(0.0) { acc, 
 }
 
 private fun initCubeBlockDefinitions() {
-    val cubeBlocksXmlDocs: Map<String, Element> = cubeBlocksList.mapValues {
-        Jsoup.parse(it.value).root()
+    val cubeBlocksDir = File(".", "game-files-processor/src/main/resources/CubeBlocks")
+    val cubeBlocksFiles: List<File> = cubeBlocksDir.listFiles()?.toList() ?:
+        throw IOException("couldn't list contents of "+cubeBlocksDir.absolutePath)
+    println(File(".").absolutePath)
+    val cubeBlocksXmlDocs: Map<String, Element> = cubeBlocksFiles.associateTo(mutableMapOf()) {
+        it.name to Jsoup.parse(readResource("CubeBlocks/${it.name}"))
     }
+    println("map of files to xml docs contains ${cubeBlocksXmlDocs.size} entries:"+cubeBlocksXmlDocs.entries.joinToString {
+        it.key
+    })
+        /*val cubeBlocksXmlDocs: Map<String, Element> = cubeBlocksList.mapValues {
+            Jsoup.parse(it.value).root()
+        }*/
 
     for((fileName, definitionsFile) in cubeBlocksXmlDocs) {
         val blockDefs: Element = definitionsFile.select("Definitions>CubeBlocks")
