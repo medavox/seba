@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+        <meta name="description" content="Space Engineers Blueprint Analyser: gives a breakdown of various stats for your blueprint (mass, PCU, power, ammunition usage)">
+        <title>Space Engineers Blueprint Analyser</title>
+        <script src="se-blueprint-analyser.js" defer></script>
+        <link rel="stylesheet" href="main.css">
+    </head>
+    <body>
+        <div class="banner">
+            <div class="headingz">
+                <h1>Space Engineers Blueprint Analyser</h1>
+            </div>
+        </div>
+        <div class="content">
+            <div class="content-guide">
+                <p>This web app creates a breakdown of various important stats in the supplied blueprint.</p>
+                <p>Your blueprints can usually be found in:
+                <code><pre>%appdata%\Roaming\Space Engineers\Blueprints\Local\</pre></code>
+                (You can copy and paste this into the file picker)
+                </p>
+            </div>
+            <input id="blueprint_file_input" type="file"/>
+            <div id="results">
+                <p>Click on a heading to sort by that column.</p>
+                <div style="overflow-x:auto;">
+                    <table id="breakdown">
+                    </table>
+                </div>
+            </div>
+        </div>
+        <footer>
+            <span>Built entirely in Kotlin</span><a href="https://github.com/medavox/seba">Source on Github</a>
+        </footer>
+    </body>
+</html>
