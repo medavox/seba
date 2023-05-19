@@ -7,7 +7,6 @@
 
         <meta name="description" content="Space Engineers Blueprint Analyser: gives a breakdown of various stats for your blueprint (mass, PCU, power, ammunition usage)">
         <title>Space Engineers Blueprint Analyser</title>
-    <!--    <link rel="stylesheet" href="gh-fork-ribbon.css">-->
         <script src="se-blueprint-analyser.js" defer></script>
         <link rel="stylesheet" href="main.css">
     </head>
@@ -19,27 +18,11 @@
         </div>
         <div class="content">
             <div class="content-guide">
-                <p>This simple web app creates a breakdown of various important stats in the supplied blueprint.</p>
-                <p>It needs a copy of the game's data files, namely sbc <code>recipes.xml</code> file (which contains all the crafting recipes in the game), as the game license prohibits including it with this app.</p>
-                <p>A benefit of you supplying your own copy is that the crafting recipes will always be for your version.</p>
-                <p>Your <code>recipes.xml</code> file can usually be found in:
-                <code><pre>C:\Program Files (86)\Steam\steamapps\common\7 Days To Die\Data\Config\</pre></code>
+                <p>This web app creates a breakdown of various important stats in the supplied blueprint.</p>
+                <p>Your blueprints can usually be found in:
+                <code><pre>%appdata%\Roaming\Space Engineers\Blueprints\Local\</pre></code>
                 (You can copy and paste this into the file picker)
                 </p>
-                <!--<p>
-                Linux users are far too clever and attractive to need any help finding it,
-                </p><p>
-                and Mac users should instead think about what mistakes led them to become a mac user</p>-->
-            </div>
-            <div class="content-calculator">
-                <input id="blueprint_file_input" type="file"/>
-                <div class="dropdown">
-                    <p>Was willst du?</p>
-                    <input id="surch" placeholder="please provide a valid recipes.xml file first" size="value" disabled>
-                    <div class="dropdown-content" id="suggestions">
-                    </div>
-                </div>
-                <button id="bouton" type="button" disabled>Craftulate!</button>
             </div>
             <div id="results">
                 <p>In order to make <a id="quantity"></a> of <a id="recipeName"></a>, you will need to gather:</p>
