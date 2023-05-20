@@ -13,7 +13,6 @@ import org.w3c.files.FileReader
 // can run indefinitely with everything on idle?
 // can we meet max power demand? (is total max output >= max demand)
 //      with just batteries?
-// print grid name
 // total mass
 // total blocks
 // total PCU

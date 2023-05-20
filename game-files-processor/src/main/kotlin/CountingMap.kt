@@ -23,4 +23,28 @@ open class CountingMap<K>(
     override fun remove(key: K): Int = backingMap.remove(key) ?: 0
     override fun toString(): String = backingMap.toString()
 
+    operator fun plus(other: CountingMap<K>): CountingMap<K> {
+        val newMap = CountingMap<K>()
+        newMap.putAll(this)
+        for((key, count) in other) {
+            if(newMap.containsKey(key)) {
+                val currentCount = newMap.get(key)
+                newMap.put(key, currentCount + count)
+            } else {
+                newMap.put(key, count)
+            }
+        }
+        return newMap
+    }
+
+    operator fun plusAssign(other: CountingMap<K>) {
+        for((key, count) in other) {
+            if(containsKey(key)) {
+                val currentCount = get(key)
+                put(key, currentCount + count)
+            } else {
+                put(key, count)
+            }
+        }
+    }
 }
