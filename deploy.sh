@@ -22,3 +22,4 @@ cp -f build.distributions/* .
 git add index.html style.css seba.js seba.js.map
 git commit -m "deploy site using script"
 git push hub
+git checkout main
