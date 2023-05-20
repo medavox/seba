@@ -8,7 +8,7 @@
         <meta name="description" content="Space Engineers Blueprint Analyser: gives a breakdown of various stats for your blueprint (mass, PCU, power, ammunition usage)">
         <title>Space Engineers Blueprint Analyser</title>
         <script src="seba.js" defer></script>
-        <link rel="stylesheet" href="main.css">
+        <link rel="stylesheet" href="style.css">
     </head>
     <body>
         <div class="banner">
@@ -20,12 +20,13 @@
             <div class="content-guide">
                 <p>This web app creates a breakdown of various important stats in the supplied blueprint.</p>
                 <p>Your blueprints can usually be found in:
-                <code><pre>%appdata%\Roaming\Space Engineers\Blueprints\Local\</pre></code>
+                <code><pre>%appdata%\SpaceEngineers\Blueprints\local\</pre></code>
                 (You can copy and paste this into the file picker)
                 </p>
             </div>
             <input id="blueprint_file_input" type="file"/>
             <div id="results">
+                <h2 id="blueprintName"></h2>
                 <p>Click on a heading to sort by that column.</p>
                 <div style="overflow-x:auto;">
                     <table id="breakdown">
@@ -34,7 +35,7 @@
             </div>
         </div>
         <footer>
-            <span>Built entirely in Kotlin</span><a href="https://github.com/medavox/seba">Source on Github</a>
+            <span>Built entirely in Kotlin - </span><a href="https://github.com/medavox/seba">Source on Github</a>
         </footer>
     </body>
 </html>
