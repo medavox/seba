@@ -74,7 +74,7 @@
         clear: both;
     }
 
-    #unfound_blocks {
+    .error {
         width: 100%;
         display: none;
         clear: both;

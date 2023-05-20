@@ -3,8 +3,6 @@ import org.w3c.dom.parsing.DOMParser
 import kotlinx.browser.document
 import kotlinx.dom.*
 import org.w3c.dom.*
-import org.w3c.dom.events.KeyboardEvent
-import org.w3c.dom.events.MouseEvent
 import org.w3c.files.File
 import org.w3c.files.FileReader
 
@@ -91,7 +89,7 @@ fun main() {
     // load its contents and enable the rest of the page UI
     blueprintFileInput.addEventListener("change", { event ->
         val blueprint:File = event.target.asDynamic().files[0] as File
-
+        resetPage()
         println("file: ${blueprint.name}; size: ${blueprint.size}")
         val fr = FileReader()
         fr.readAsText(blueprint)
@@ -100,12 +98,18 @@ fun main() {
                     "text/xml") as XMLDocument
             val parseError = blueprintXmlDoc.querySelector("parsererror")
             parseError?.let {
-
+                document.getElementById("invalid_file")?.addClass("vizzibull")
             }
             processBlueprint(blueprintXmlDoc)
             Unit //it's not redundant because kotlin/js is being doopid
         }
     })
+}
+
+fun resetPage() {
+    document.getElementById("unfound_blocks")?.removeClass("vizzibull")
+    document.getElementById("invalid_file")?.removeClass("vizzibull")
+    document.getElementById("unfound_blocks_list")?.clear()
 }
 
 /**called when the user presses the button to initiate the search*/

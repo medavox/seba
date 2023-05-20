@@ -25,10 +25,12 @@
                 </p>
             </div>
             <input id="blueprint_file_input" type="file"/>
+            <div id="invalid_file" class="error">Invalid file. Please provide a valid Space Engineers Blueprint.
+                They're usually named <code><pre>bp.sbc</pre></code></div>
             <div id="results">
                 <h2 id="blueprintName"></h2>
-                <div id="unfound_blocks">
-                    <p class="error">Warning: data was not found for the following blocks in the blueprint (with type/subtype):</p>
+                <div id="unfound_blocks" class="error">
+                    <p>Warning: data was not found for the following blocks in the blueprint (with type/subtype):</p>
                     <code><pre><ul id="unfound_blocks_list"></ul></pre></code>
                 </div>
 
