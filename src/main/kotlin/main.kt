@@ -31,6 +31,9 @@ fun processBlueprint(blueprint: XMLDocument): CountingMap<String> {
     println("number of blocks in main grid:"+mainGridBlocks.size)
     //right, now let's get to work
     val blockCounts = CountingMap<String>()
+    val blueprintName: String = blueprint.querySelector("Definitions > ShipBlueprints > ShipBlueprint > Id"
+        )?.attributes?.get("Subtype")?.value ?: "<unknown name>"
+    document.getElementById("blueprintName")?.textContent = "Stats for $blueprintName"
     for(blockElement in mainGridBlocks) {
         val subtype = blockElement.firstChildElementWithTag("SubtypeName").textContent ?: throw Exception("block has no subtype!")
         val xsiType = blockElement.attributes.get("xsi:type")?.value?.replace("MyObjectBuilder_", "")?: ""
@@ -44,7 +47,7 @@ fun processBlueprint(blueprint: XMLDocument): CountingMap<String> {
         println("xsisub: $xsiSub")
         //so it looks like the xsi:Type in a blueprint ACTUALLY corresponds to the typeId
         val block = data.first { (it.typeId+":"+it.subtypeId) == xsiSub }
-        println("${block.humanName},$count,${count * block.mass},${count * block.pcu}")
+        //println("${block.humanName},$count,${count * block.mass},${count * block.pcu}")
         BlockRow(
             name = block.humanName,
             count = count,
