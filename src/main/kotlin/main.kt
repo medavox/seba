@@ -21,6 +21,8 @@ import org.w3c.files.FileReader
 // total PCU
 // match blocks also by grid size
 // display info including subgrids, without subgrids, and breakdown per grid
+val unfoundBlocksList = document.getElementById("unfound_blocks_list") as HTMLUListElement
+
 fun processBlueprint(blueprint: XMLDocument): CountingMap<String> {
     //in Definitions > ShipBlueprint > CubeGrids:
     val cubeGrids: Element = blueprint.querySelector("Definitions > ShipBlueprints > ShipBlueprint > CubeGrids")
@@ -38,25 +40,35 @@ fun processBlueprint(blueprint: XMLDocument): CountingMap<String> {
         val subtype = blockElement.firstChildElementWithTag("SubtypeName").textContent ?: throw Exception("block has no subtype!")
         val xsiType = blockElement.attributes.get("xsi:type")?.value?.replace("MyObjectBuilder_", "")?: ""
 
-        blockCounts["$xsiType:$subtype"] += 1
+        blockCounts["$xsiType/$subtype"] += 1
         /*val blockData = data.first {
             it.subtypeId == subtype
         }*/
     }
-    val dataRows = blockCounts.map { (xsiSub, count) ->
-        println("xsisub: $xsiSub")
-        //so it looks like the xsi:Type in a blueprint ACTUALLY corresponds to the typeId
-        val block = data.first { (it.typeId+":"+it.subtypeId) == xsiSub }
-        //println("${block.humanName},$count,${count * block.mass},${count * block.pcu}")
-        BlockRow(
-            name = block.humanName,
-            count = count,
-            mass = count * block.mass,
-            pcu = count * block.pcu
-            )
+    val dataRows = blockCounts.mapNotNull { (xsiSub, count) ->
+        createBlockRow(xsiSub, count)
     }
     showBreakdown(dataRows.sortedBy { it.name })
     return blockCounts
+}
+
+fun createBlockRow(xsiSub: String, count: Int): BlockRow? {
+    println("xsisub: $xsiSub")
+    //so it looks like the xsi:Type in a blueprint ACTUALLY corresponds to the typeId
+    val block:BlockData? = data.firstOrNull { (it.typeId+"/"+it.subtypeId) == xsiSub }
+    if(block == null) {
+        document.getElementById("unfound_blocks")?.addClass("vizzibull")
+        unfoundBlocksList.appendElement("li") {
+            appendText(xsiSub)
+        }
+        return null
+    }
+    return BlockRow(
+        name = block.humanName,
+        count = count,
+        mass = count * block.mass,
+        pcu = count * block.pcu
+    )
 }
 
 private fun Element.childElementsWithTag(tag: String): List<Element> {

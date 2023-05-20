@@ -46,32 +46,6 @@
         padding: 0 10px 0 10px;
     }
 
-/* The dropdown container */
-    .dropdown {
-        overflow: hidden;
-        padding: 20px 0 10px 0;
-    }
-
-    #surch {
-        font-size: 16px;
-        padding: 4px 6px;
-        color: #fff;
-        width:94%;
-        background-color: inherit;
-        font-family: inherit; /* Important for vertical align on mobile phones */
-        margin: 0; /* Important for vertical align on mobile phones */
-    }
-
-/* Add a grey background color to dropdown links on hover */
-    #suggestions a:hover {
-        background-color: #ddd;
-    }
-
-    #bouton {
-        width: 100%;
-        font-size: 1.4em;
-    }
-
 /* Show the dropdown menu on hover */
     .vizzibull {
         display: block !important;
@@ -95,6 +69,12 @@
     }
 
     #results {
+        width: 100%;
+        display: none;
+        clear: both;
+    }
+
+    #unfound_blocks {
         width: 100%;
         display: none;
         clear: both;

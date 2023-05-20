@@ -27,6 +27,11 @@
             <input id="blueprint_file_input" type="file"/>
             <div id="results">
                 <h2 id="blueprintName"></h2>
+                <div id="unfound_blocks">
+                    <p class="error">Warning: data was not found for the following blocks in the blueprint (with type/subtype):</p>
+                    <code><pre><ul id="unfound_blocks_list"></ul></pre></code>
+                </div>
+
                 <p>Click on a heading to sort by that column.</p>
                 <div style="overflow-x:auto;">
                     <table id="breakdown">
