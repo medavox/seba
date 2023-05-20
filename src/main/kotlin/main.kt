@@ -20,34 +20,56 @@ import org.w3c.files.FileReader
 // display info including subgrids, without subgrids, and breakdown per grid
 val unfoundBlocksList = document.getElementById("unfound_blocks_list") as HTMLUListElement
 
-fun processBlueprint(blueprint: XMLDocument): CountingMap<String> {
-    //in Definitions > ShipBlueprint > CubeGrids:
-    val cubeGrids: Element = blueprint.querySelector("Definitions > ShipBlueprints > ShipBlueprint > CubeGrids")
-        ?: throw Exception("couldn't find CubeGrids element!")
-    println("number of grids in blueprint:"+cubeGrids.childNodes.length)
-    val mainGrid:Element = cubeGrids.firstElementChild ?: throw Exception("couldn't get first (presumably main) grid!")
-    val mainGridBlocks:List<Element> = mainGrid.firstChildElementWithTag("CubeBlocks").children.asList()
-    println("number of blocks in main grid:"+mainGridBlocks.size)
-    //right, now let's get to work
-    val blockCounts = CountingMap<String>()
-    val blueprintName: String = blueprint.querySelector("Definitions > ShipBlueprints > ShipBlueprint > Id"
-        )?.attributes?.get("Subtype")?.value ?: "<unknown name>"
-    document.getElementById("blueprintName")?.textContent = "Stats for $blueprintName"
-    for(blockElement in mainGridBlocks) {
-        val subtype = blockElement.firstChildElementWithTag("SubtypeName").textContent ?: throw Exception("block has no subtype!")
-        val xsiType = blockElement.attributes.get("xsi:type")?.value?.replace("MyObjectBuilder_", "")?: ""
+fun XMLDocument.getName(): String = querySelector("Definitions > ShipBlueprints > ShipBlueprint > Id"
+)?.attributes?.get("Subtype")?.value ?: "<unknown name>"
 
-        blockCounts["$xsiType/$subtype"] += 1
-        /*val blockData = data.first {
-            it.subtypeId == subtype
-        }*/
+fun processBlueprint(blueprint: XMLDocument) {
+    //in Definitions > ShipBlueprint > CubeGrids:
+    val cubeGridsElement: Element = blueprint.querySelector("Definitions > ShipBlueprints > ShipBlueprint > CubeGrids")
+        ?: throw Exception("couldn't find CubeGrids element!")
+    val grids = cubeGridsElement.childElementsWithTag("CubeGrid")
+    println("${cubeGridsElement.childNodes.length} grids in blueprint:"+grids.joinToString(separator = "\n") {
+        it.getGridName()
+    })
+    document.getElementById("blueprintName")?.textContent = "Stats for ${blueprint.getName()}"
+    val blockCountByGrid = mutableMapOf<String, CountingMap<String>>()
+    val totalBlockCounts = CountingMap<String>()
+
+    for(grid in grids) {
+        val counts = processGrid(grid)
+        totalBlockCounts += counts
+        val gridName = grid.getGridName()
+        if(!blockCountByGrid.containsKey(gridName)) {
+            blockCountByGrid.put(grid.getGridName(), counts)
+        } else {
+            blockCountByGrid.put(grid.getGridName()+" copy", counts)
+        }
     }
-    val dataRows = blockCounts.mapNotNull { (xsiSub, count) ->
+
+    val dataRows = totalBlockCounts.mapNotNull { (xsiSub, count) ->
         createBlockRow(xsiSub, count)
     }
     showBreakdown(dataRows.sortedBy { it.name })
+}
+
+fun Element.getGridName(): String = firstChildElementWithTag("DisplayName")?.textContent ?: "<no name found>"
+
+fun processGrid(grid: Element): CountingMap<String> {
+
+    val mainGridBlocks:List<Element> = grid.firstChildElementWithTag("CubeBlocks")?.children?.asList() ?: throw NoSuchElementException("couldn't find blocks in grid")
+    println("number of blocks in main grid:"+mainGridBlocks.size)
+    //right, now let's get to work
+    val blockCounts = CountingMap<String>()
+
+    for(blockElement in mainGridBlocks) {
+        val subtype = blockElement.firstChildElementWithTag("SubtypeName")?.textContent ?: throw Exception("block has no subtype!")
+        val xsiType = blockElement.attributes.get("xsi:type")?.value?.replace("MyObjectBuilder_", "")?: ""
+
+        blockCounts["$xsiType/$subtype"] += 1
+    }
     return blockCounts
 }
+
 
 fun createBlockRow(xsiSub: String, count: Int): BlockRow? {
     println("xsisub: $xsiSub")
@@ -75,8 +97,8 @@ private fun Element.childElementsWithTag(tag: String): List<Element> {
     }
 }
 
-private fun Element.firstChildElementWithTag(tag: String): Element {
-    return this.children.asList().first {
+private fun Element.firstChildElementWithTag(tag: String): Element? {
+    return this.children.asList().firstOrNull {
         it.tagName == tag
     }
 }
