@@ -8,15 +8,19 @@ import org.w3c.dom.events.MouseEvent
 import org.w3c.files.File
 import org.w3c.files.FileReader
 
-private var blueprintXmlDoc:XMLDocument? = null
-private val domParser: DOMParser = DOMParser()
-
 //TODO: power consumption:
-//values are negative for consumption, positive for generation
+// values are negative for consumption, positive for generation
 // max power capacity
 // time til drained when everything is running at full and no generators running
 // can run indefinitely with everything on idle?
 // can we meet max power demand? (is total max output >= max demand)
+//      with just batteries?
+// print grid name
+// total mass
+// total blocks
+// total PCU
+// match blocks also by grid size
+// display info including subgrids, without subgrids, and breakdown per grid
 fun processBlueprint(blueprint: XMLDocument): CountingMap<String> {
     //in Definitions > ShipBlueprint > CubeGrids:
     val cubeGrids: Element = blueprint.querySelector("Definitions > ShipBlueprints > ShipBlueprint > CubeGrids")
@@ -77,9 +81,13 @@ fun main() {
         val fr = FileReader()
         fr.readAsText(blueprint)
         fr.onload = { loadedEvent ->
-            blueprintXmlDoc = domParser.parseFromString(loadedEvent.target.asDynamic().result as String,
+            val blueprintXmlDoc = DOMParser().parseFromString(loadedEvent.target.asDynamic().result as String,
                     "text/xml") as XMLDocument
-            processBlueprint(blueprintXmlDoc!!)
+            val parseError = blueprintXmlDoc.querySelector("parsererror")
+            parseError?.let {
+
+            }
+            processBlueprint(blueprintXmlDoc)
             Unit //it's not redundant because kotlin/js is being doopid
         }
     })
