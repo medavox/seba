@@ -1,0 +1,34 @@
+STORERS
+    MaxStoredPower
+
+PRODUCERS
+    MaxPowerOutput
+
+
+CONSUMERS
+    ConsumptionPower
+    RequiredPowerInput
+    PowerInput
+    OperationalPowerConsumption
+    PowerConsumptionMoving
+    MaxBroadcastPowerDrainkw
+
+    IDLE-SYNONYMS
+        PowerConsumptionIdle
+        IdlePowerConsumption
+        PowerInputIdle
+        StandbyPowerConsumption
+        RequiredIdlePowerInput
+        
+    MIN SYNONYMS
+        BasePowerInput
+        MinPowerConsumption
+
+ACTIVE SYNONYMS
+    PowerInputLasing
+    PowerInputTurning
+
+MaxSafezonePowerDrainkw
+MinSafezonePowerDrainkw
+
+MaxPowerConsumption
