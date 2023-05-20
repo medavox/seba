@@ -1,4 +1,5 @@
 branch=$(git branch --show-curent)
+git stash
 if [[ $branch == "main" ]] ; then
   ./gradlew browserProductionWebpack
 else
@@ -23,3 +24,4 @@ git add index.html style.css seba.js seba.js.map
 git commit -m "deploy site using script"
 git push hub
 git checkout main
+git stash pop
