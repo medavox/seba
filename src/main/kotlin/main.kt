@@ -18,6 +18,7 @@ import org.w3c.files.FileReader
 // total PCU
 // match blocks also by grid size
 // display info including subgrids, without subgrids, and breakdown per grid
+// per-grid breakdown, percent of total ship
 val unfoundBlocksList = document.getElementById("unfound_blocks_list") as HTMLUListElement
 
 fun XMLDocument.getName(): String = querySelector("Definitions > ShipBlueprints > ShipBlueprint > Id"
@@ -105,7 +106,7 @@ private fun Element.firstChildElementWithTag(tag: String): Element? {
 
 fun main() {
     val blueprintFileInput = document.getElementById("blueprint_file_input") as HTMLInputElement
-
+    document.getElementById("noscript")?.remove()
     //once the user provides a blueprint,
     // load its contents and enable the rest of the page UI
     blueprintFileInput.addEventListener("change", { event ->
