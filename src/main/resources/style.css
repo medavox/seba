@@ -78,6 +78,8 @@
         width: 100%;
         display: none;
         clear: both;
+        color: #ff2c00;
+        padding: 5px;
     }
 
     footer {
