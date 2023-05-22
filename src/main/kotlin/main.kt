@@ -126,6 +126,22 @@ fun main() {
             Unit //it's not redundant because kotlin/js is being doopid
         }
     })
+    setupCollapsibleButton("breakdown_button", "breakdown_div")
+}
+
+fun setupCollapsibleButton(buttonId: String, contentDivId: String) {
+    val button = document.getElementById(buttonId) as HTMLButtonElement
+    val div = document.getElementById(contentDivId) as HTMLDivElement
+    button.addEventListener("click", { event ->
+        println("bblep")
+        button.classList.toggle("active")
+        println("table height:"+div.style.maxHeight)
+        if (button.classList.contains("active")) {
+            div.style.maxHeight = div.scrollHeight.toString() + "px"
+        } else {
+            div.style.maxHeight = "0px"
+        }
+    })
 }
 
 fun resetPage() {
@@ -136,7 +152,8 @@ fun resetPage() {
 
 /**called when the user presses the button to initiate the search*/
 fun showBreakdown(tableData:List<BlockRow>) {
-    val breakdownTable = document.getElementById("breakdown") as HTMLTableElement
+    val div = document.getElementById("breakdown_div") as HTMLDivElement
+    val breakdownTable = document.getElementById("breakdown_table") as HTMLTableElement
     breakdownTable.clear()
     breakdownTable.appendElement("tr") {
         //name, count, mass, pcu
@@ -158,4 +175,5 @@ fun showBreakdown(tableData:List<BlockRow>) {
     }
 
     (document.getElementById("results") as HTMLDivElement).addClass("vizzibull")
+    div.style.maxHeight = div.scrollHeight.toString() + "px"
 }

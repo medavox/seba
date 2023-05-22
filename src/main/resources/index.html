@@ -37,8 +37,16 @@
 
                 <p>Click on a heading to sort by that column.</p>
                 <div style="overflow-x:auto;">
-                    <table id="breakdown">
-                    </table>
+                    <button id="totals_button" class="collapse_button">Totals</button>
+                    <table id="totals_table" class="collapsed"></table>
+
+                    <button id="power_stats_button" class="collapse_button">Power Stats</button>
+                    <table id="power_stats_table" class="collapsed"></table>
+
+                    <button id="breakdown_button" class="collapse_button active">Breakdown</button>
+                    <div id="breakdown_div" class="collapsible">
+                        <table id="breakdown_table"></table>
+                    </div>
                 </div>
             </div>
         </div>
