@@ -76,9 +76,6 @@ private fun initCubeBlockDefinitions() {
     val cubeBlocksXmlDocs: Map<String, Element> = cubeBlocksFiles.associateTo(mutableMapOf()) {
         it.name to Jsoup.parse(readResource("CubeBlocks/${it.name}"))
     }
-    println("map of files to xml docs contains ${cubeBlocksXmlDocs.size} entries:"+cubeBlocksXmlDocs.entries.joinToString {
-        it.key
-    })
         /*val cubeBlocksXmlDocs: Map<String, Element> = cubeBlocksList.mapValues {
             Jsoup.parse(it.value).root()
         }*/
@@ -94,28 +91,31 @@ private fun initCubeBlockDefinitions() {
                 powerTags.add(it.tagName())
             }
             //I thought I could uniquely identify all blocks by just their subtypeid, but no
-            val subtypeId = block.getElementsByTag("SubtypeId")
-                .firstOrNull()?: throw Exception("couldn't find subtype id in $fileName")
+            val subtypeId = block.getElementsByTag("SubtypeId").firstOrNull()?.ownText()
+                ?: throw Exception("couldn't find subtype id in $fileName")
+            val blockSize = block.getElementsByTag("CubeSize").firstOrNull()?.ownText()
+                ?: throw Exception("couldn't find block size for $subtypeId")
+            if(blockSize != "Large" && blockSize != "Small") throw Exception("block size for '$subtypeId' was neither Large nor Small: $blockSize")
             val typeId = block.getElementsByTag("TypeId")
                 .firstOrNull()?: throw Exception("couldn't find type id in $fileName")
             val displayName = block.getElementsByTag("DisplayName").firstOrNull()
             if(displayName == null) {
-                println("WARNING: couldn't find DisplayName for '${subtypeId.ownText()}' in $fileName")
+                println("WARNING: couldn't find DisplayName for '$subtypeId' in $fileName")
                 continue
             }
-            val humanName: String = localisationStrings[displayName.ownText()] ?: subtypeId.ownText()
-            val pcu: Int? = block.getPcuWithFallbackForArmor2(fileName, subtypeId.ownText())
+            val humanName: String = localisationStrings[displayName.ownText()] ?: subtypeId
+            val pcu: Int? = block.getPcuWithFallbackForArmor2(fileName, subtypeId)
             if(pcu == null) {
-                println("WARNING: couldn't find PCU for '${typeId.ownText()}/${subtypeId.ownText()}/$humanName' in $fileName")
+                println("WARNING: couldn't find PCU for '${typeId.ownText()}/$subtypeId/$humanName' in $fileName")
                 continue
             }
 
             if(typeId.ownText().contains("_")) {
-                println("weird typeId for subType '${subtypeId.ownText()}': ${typeId.ownText()}")
+                println("weird typeId for subType '$subtypeId': ${typeId.ownText()}")
             }
 
             val componentsRaw = block.getElementsByTag("Components").firstOrNull()?.children()?:
-                throw Exception("couldn't find Components for '${typeId.ownText()}/${subtypeId.ownText()}/$humanName' in $fileName")
+                throw Exception("couldn't find Components for '${typeId.ownText()}/$subtypeId/$humanName' in $fileName")
 
             val components:Map<String, Int> = componentsRaw.associate { component ->
                 component.attr("Subtype") to component.attr("Count").toInt()
@@ -135,9 +135,10 @@ private fun initCubeBlockDefinitions() {
 
             allBlockData.add(BlockData(
                 typeId = typeId.ownText().replace("MyObjectBuilder_", ""),
-                subtypeId = subtypeId.ownText(),
+                subtypeId = subtypeId,
                 pcu = pcu,
                 humanName = humanName,
+                size = if(blockSize == "Large") 'L' else 'S',
                 components = components,
                 mass = components.calculateMass(),
                 xsiType = xsiType

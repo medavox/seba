@@ -6,12 +6,14 @@ data class BlockData(
     val humanName: String,
     val components: Map<String, Int>,
     val mass: Double,
+    val size: Char,
     val xsiType: String = "",
 ) {
     override fun toString(): String {
         return "BlockData(pcu=$pcu,\n" +
             "\ttypeId=\"$typeId\",\n" +
             "\tsubtypeId=\"$subtypeId\",\n" +
+            "\tsize='$size',\n" +
             "\thumanName=\"$humanName\",\n" +
                 (if(xsiType.isNotEmpty()) "\txsiType=\"$xsiType\",\n" else "") +
             "\tmass=$mass,\n" +
