@@ -13,7 +13,6 @@ import org.w3c.files.FileReader
 // can run indefinitely with everything on idle?
 // can we meet max power demand? (is total max output >= max demand)
 //      with just batteries?
-// match blocks also by grid size
 // display info including subgrids, without subgrids, and breakdown per grid
 // per-grid breakdown, percent of total ship
 val unfoundBlocksList = document.getElementById("unfound_blocks_list") as HTMLUListElement
@@ -47,12 +46,19 @@ fun processBlueprint(blueprint: XMLDocument) {
     val blockDataCounts:Map<BlockData, Int> = totalBlockCounts.mapToBlockData()
     var totalMass: Double = 0.0
     var totalPcu: Int = 0
-    val totalSmallBlocks: Int = 0
-    val totalLargeBlocks: Int = 0
+    var totalSmallBlocks: Int = 0
+    var totalLargeBlocks: Int = 0
 
     blockDataCounts.entries.forEach { (blockData:BlockData, count: Int) ->
         totalMass += (count * blockData.mass)
         totalPcu += (count * blockData.pcu)
+
+        when (blockData.size) {
+            'L' -> totalLargeBlocks += count
+            'S' -> totalSmallBlocks += count
+            else -> throw Exception("wtf blocksize is somehow still not 'L' or 'S' for ${blockData.humanName}! " +
+                    "it's ${blockData.size}")
+        }
     }
 
     val dataRows = blockDataCounts.map { (block, count) ->
@@ -64,6 +70,32 @@ fun processBlueprint(blueprint: XMLDocument) {
         )
     }
     showBreakdown(dataRows.sortedBy { it.name })
+
+    //populate totals table
+    val totalsTable = document.getElementById("totals_table") as HTMLTableElement
+    totalsTable.clear()
+    with(totalsTable) {
+        appendElement("tr") {
+            appendElement("td") { appendText("Total Mass") }
+            appendElement("td") { appendText(totalMass.toString()) }
+        }
+        appendElement("tr") {
+            appendElement("td") { appendText("Total PCU") }
+            appendElement("td") { appendText(totalPcu.toString()) }
+        }
+        appendElement("tr") {
+            appendElement("td") { appendText("Total Blocks") }
+            appendElement("td") { appendText((totalLargeBlocks + totalSmallBlocks).toString()) }
+        }
+        appendElement("tr") {
+            appendElement("td") { appendText("Small Blocks") }
+            appendElement("td") { appendText(totalSmallBlocks.toString()) }
+        }
+        appendElement("tr") {
+            appendElement("td") { appendText("Large Blocks") }
+            appendElement("td") { appendText(totalLargeBlocks.toString()) }
+        }
+    }
 }
 
 fun Element.getGridName(): String = firstChildElementWithTag("DisplayName")?.textContent ?: "<no name found>"
@@ -137,6 +169,7 @@ fun main() {
         }
     })
     setupCollapsibleButton("breakdown_button", "breakdown_div")
+    setupCollapsibleButton("totals_button", "totals_div")
 }
 
 fun setupCollapsibleButton(buttonId: String, contentDivId: String) {
