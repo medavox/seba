@@ -13,9 +13,6 @@ import org.w3c.files.FileReader
 // can run indefinitely with everything on idle?
 // can we meet max power demand? (is total max output >= max demand)
 //      with just batteries?
-// total mass
-// total blocks
-// total PCU
 // match blocks also by grid size
 // display info including subgrids, without subgrids, and breakdown per grid
 // per-grid breakdown, percent of total ship
@@ -47,8 +44,24 @@ fun processBlueprint(blueprint: XMLDocument) {
         }
     }
 
-    val dataRows = totalBlockCounts.mapNotNull { (xsiSub, count) ->
-        createBlockRow(xsiSub, count)
+    val blockDataCounts:Map<BlockData, Int> = totalBlockCounts.mapToBlockData()
+    var totalMass: Double = 0.0
+    var totalPcu: Int = 0
+    val totalSmallBlocks: Int = 0
+    val totalLargeBlocks: Int = 0
+
+    blockDataCounts.entries.forEach { (blockData:BlockData, count: Int) ->
+        totalMass += (count * blockData.mass)
+        totalPcu += (count * blockData.pcu)
+    }
+
+    val dataRows = blockDataCounts.map { (block, count) ->
+        BlockRow(
+            name = block.humanName,
+            count = count,
+            mass = count * block.mass,
+            pcu = count * block.pcu
+        )
     }
     showBreakdown(dataRows.sortedBy { it.name })
 }
@@ -71,24 +84,21 @@ fun processGrid(grid: Element): CountingMap<String> {
     return blockCounts
 }
 
-
-fun createBlockRow(xsiSub: String, count: Int): BlockRow? {
-    println("xsisub: $xsiSub")
-    //so it looks like the xsi:Type in a blueprint ACTUALLY corresponds to the typeId
-    val block:BlockData? = data.firstOrNull { (it.typeId+"/"+it.subtypeId) == xsiSub }
-    if(block == null) {
-        document.getElementById("unfound_blocks")?.addClass("vizzibull")
-        unfoundBlocksList.appendElement("li") {
-            appendText(xsiSub)
+fun CountingMap<String>.mapToBlockData(): Map<BlockData, Int> {
+    val output = mutableMapOf<BlockData, Int>()
+    this.forEach { (xsiSub, count) ->
+        //so it looks like the xsi:Type in a blueprint ACTUALLY corresponds to the typeId
+        val block: BlockData? = data.firstOrNull { (it.typeId + "/" + it.subtypeId) == xsiSub }
+        if (block == null) {
+            document.getElementById("unfound_blocks")?.addClass("vizzibull")
+            unfoundBlocksList.appendElement("li") {
+                appendText(xsiSub)
+            }
+        } else {
+            output.put(block, count)
         }
-        return null
     }
-    return BlockRow(
-        name = block.humanName,
-        count = count,
-        mass = count * block.mass,
-        pcu = count * block.pcu
-    )
+    return output
 }
 
 private fun Element.childElementsWithTag(tag: String): List<Element> {
