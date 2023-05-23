@@ -7,9 +7,9 @@ data class BlockRow(val name: String, val count: Int, val pcu: Int, val mass: Do
         table.appendElement("tr") {
             //name, count, mass, pcu
             appendElement("td") {appendText(name)}
-            appendElement("td") {appendText(count.toString())}
-            appendElement("td") {appendText(mass.toString())}
-            appendElement("td") {appendText(pcu.toString())}
+            appendElement("td") {appendText(count.asDynamic().toLocaleString() as String)}
+            appendElement("td") {appendText(mass.asDynamic().toLocaleString() as String)}
+            appendElement("td") {appendText(pcu.asDynamic().toLocaleString() as String)}
         }
     }
 }

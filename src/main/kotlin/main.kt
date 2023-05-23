@@ -33,7 +33,7 @@ fun processBlueprint(blueprint: XMLDocument) {
     val totalBlockCounts = CountingMap<String>()
 
     for(grid in grids) {
-        val counts = processGrid(grid)
+        val counts:CountingMap<String> = countBlocksInGrid(grid)
         totalBlockCounts += counts
         val gridName = grid.getGridName()
         if(!blockCountByGrid.containsKey(gridName)) {
@@ -77,37 +77,37 @@ fun processBlueprint(blueprint: XMLDocument) {
     with(totalsTable) {
         appendElement("tr") {
             appendElement("td") { appendText("Total Mass") }
-            appendElement("td") { appendText(totalMass.toString()) }
+            appendElement("td") { appendText(totalMass.asDynamic().toLocaleString() as String) }
         }
         appendElement("tr") {
             appendElement("td") { appendText("Total PCU") }
-            appendElement("td") { appendText(totalPcu.toString()) }
+            appendElement("td") { appendText(totalPcu.asDynamic().toLocaleString() as String) }
         }
         appendElement("tr") {
             appendElement("td") { appendText("Total Blocks") }
-            appendElement("td") { appendText((totalLargeBlocks + totalSmallBlocks).toString()) }
+            appendElement("td") { appendText((totalLargeBlocks + totalSmallBlocks).asDynamic().toLocaleString() as String) }
         }
         appendElement("tr") {
             appendElement("td") { appendText("Small Blocks") }
-            appendElement("td") { appendText(totalSmallBlocks.toString()) }
+            appendElement("td") { appendText(totalSmallBlocks.asDynamic().toLocaleString() as String) }
         }
         appendElement("tr") {
             appendElement("td") { appendText("Large Blocks") }
-            appendElement("td") { appendText(totalLargeBlocks.toString()) }
+            appendElement("td") { appendText(totalLargeBlocks.asDynamic().toLocaleString() as String) }
         }
     }
 }
 
 fun Element.getGridName(): String = firstChildElementWithTag("DisplayName")?.textContent ?: "<no name found>"
 
-fun processGrid(grid: Element): CountingMap<String> {
+fun countBlocksInGrid(grid: Element): CountingMap<String> {
 
-    val mainGridBlocks:List<Element> = grid.firstChildElementWithTag("CubeBlocks")?.children?.asList() ?: throw NoSuchElementException("couldn't find blocks in grid")
-    println("number of blocks in main grid:"+mainGridBlocks.size)
+    val gridBlocks:List<Element> = grid.firstChildElementWithTag("CubeBlocks")?.children?.asList() ?: throw NoSuchElementException("couldn't find blocks in grid")
+    println("number of blocks in grid:"+gridBlocks.size)
     //right, now let's get to work
     val blockCounts = CountingMap<String>()
 
-    for(blockElement in mainGridBlocks) {
+    for(blockElement in gridBlocks) {
         val subtype = blockElement.firstChildElementWithTag("SubtypeName")?.textContent ?: throw Exception("block has no subtype!")
         val xsiType = blockElement.attributes.get("xsi:type")?.value?.replace("MyObjectBuilder_", "")?: ""
 
@@ -120,7 +120,11 @@ fun CountingMap<String>.mapToBlockData(): Map<BlockData, Int> {
     val output = mutableMapOf<BlockData, Int>()
     this.forEach { (xsiSub, count) ->
         //so it looks like the xsi:Type in a blueprint ACTUALLY corresponds to the typeId
-        val block: BlockData? = data.firstOrNull { (it.typeId + "/" + it.subtypeId) == xsiSub }
+        val matches = data.filter { (it.typeId + "/" + it.subtypeId) == xsiSub }
+        if(matches.size != 1) {
+            println("ERROR: ${matches.size} matches found for $xsiSub")
+        }
+        val block: BlockData? = matches.firstOrNull()
         if (block == null) {
             document.getElementById("unfound_blocks")?.addClass("vizzibull")
             unfoundBlocksList.appendElement("li") {
