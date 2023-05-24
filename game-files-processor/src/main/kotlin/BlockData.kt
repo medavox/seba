@@ -10,6 +10,8 @@ data class BlockData(
     val xsiType: String = "",
     val powerStorageKw: Int = 0,
     val maxPowerOutputKw: Int = 0,
+    val pwrInputIdleMinKw: Int = 0,
+    val pwrInputActiveMaxKw: Int = 0,
 ) {
     override fun toString(): String {
         return "BlockData(\n" +
@@ -17,6 +19,8 @@ data class BlockData(
             (if(xsiType.isNotEmpty()) "\txsiType=\"$xsiType\",\n" else "") +
             (if(powerStorageKw != 0) "\tpowerStorageKw=$powerStorageKw,\n" else "") +
             (if(maxPowerOutputKw != 0) "\tmaxPowerOutputKw=$maxPowerOutputKw,\n" else "") +
+            (if(pwrInputIdleMinKw != 0) "\tpwrInputIdleMinKw=$pwrInputIdleMinKw,\n" else "") +
+            (if(pwrInputActiveMaxKw != 0) "\tpwrInputActiveMaxKw=$pwrInputActiveMaxKw,\n" else "") +
             "\tsubtypeId=\"$subtypeId\",\n" +
             "\thumanName=\"$humanName\",\n" +
             "\tsize='$size',\n" +
