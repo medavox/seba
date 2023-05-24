@@ -9,26 +9,24 @@ CONSUMERS
     ConsumptionPower
     RequiredPowerInput
     PowerInput
-    OperationalPowerConsumption
-    PowerConsumptionMoving
-    MaxBroadcastPowerDrainkw
 
-    IDLE-SYNONYMS
+    IDLE/MIN SYNONYMS
         PowerConsumptionIdle
         IdlePowerConsumption
         PowerInputIdle
         StandbyPowerConsumption
         RequiredIdlePowerInput
-        
-    MIN SYNONYMS
+        MinSafeZonePowerDrainkW
         BasePowerInput
         MinPowerConsumption
 
-ACTIVE SYNONYMS
+ACTIVE/MAX SYNONYMS
+    MaxBroadcastPowerDrainkw
+    PowerConsumptionMoving
+    OperationalPowerConsumption
     PowerInputLasing
     PowerInputTurning
+    MaxSafeZonePowerDrainkW
+    MaxPowerConsumption
 
-MaxSafezonePowerDrainkw
-MinSafezonePowerDrainkw
 
-MaxPowerConsumption
