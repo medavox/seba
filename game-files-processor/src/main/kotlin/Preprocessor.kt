@@ -106,7 +106,6 @@ private fun initCubeBlockDefinitions() {
         /*val cubeBlocksXmlDocs: Map<String, Element> = cubeBlocksList.mapValues {
             Jsoup.parse(it.value).root()
         }*/
-    var total = 0
     for((fileName, definitionsFile) in cubeBlocksXmlDocs) {
         val blockDefs: Element = definitionsFile.select("Definitions>CubeBlocks")
             .firstOrNull()?: throw Exception ("Block defs not found in $fileName")
@@ -145,7 +144,7 @@ private fun initCubeBlockDefinitions() {
             val componentsRaw = block.getElementsByTag("Components").firstOrNull()?.children()?:
                 throw Exception("couldn't find Components for '${typeId.ownText()}/$subtypeId/$humanName' in $fileName")
 
-            val components: CountingMap<String> = CountingMap<String>()
+            val components = CountingMap<String>()
             componentsRaw.forEach { component ->
                 components[component.attr("Subtype")] += component.attr("Count").toInt()
             }
@@ -167,41 +166,9 @@ private fun initCubeBlockDefinitions() {
                 //println("xsiType for $humanName is $xsiType")
             }
 
-            val consumerTags = block.surveyPowerTags(consumers)/*.apply {
-                if(size > 1) {
-                    println("found >1 consumer tag for '${typeId.ownText()}/$subtypeId/$humanName', $blockSize block in $fileName:")
-                    println(this)
-                }
-            }*/
-
-            val idleConsumptTags = block.surveyPowerTags(idleOrMin)/*.apply {
-                if(size > 1) {
-                    println("found >1 idle/min tag for '${typeId.ownText()}/$subtypeId/$humanName', $blockSize block in $fileName:")
-                    println(this)
-                }
-            }*/
-
-
-            val activeConsumptTags = block.surveyPowerTags(activeOrMax)/*.apply {
-                if(size > 1) {
-                    println("found >1 active/max tag for '${typeId.ownText()}/$subtypeId/$humanName', $blockSize block in $fileName:")
-                    println(this)
-                }
-            }*/
-
-            //it found wheels
-            //if(consumerTags.isNotEmpty() && (activeConsumptTags.isNotEmpty() || idleConsumptTags.isNotEmpty())) {
-            //it found thrusters, gates, ...
-//            if(activeConsumptTags.isNotEmpty()) {
-            //if(activeConsumptTags.isNotEmpty() && idleConsumptTags.isNotEmpty()) {
-            if(consumerTags.isEmpty() && activeConsumptTags.isNotEmpty() && idleConsumptTags.isNotEmpty()) {
-                println("block '${typeId.ownText()}/$subtypeId/$humanName', $blockSize block in $fileName:")
-//                println("\tconsumer tags: $consumerTags")
-                println("\tactive/max tags: $activeConsumptTags")
-                println("\tidle/min tags: $idleConsumptTags")
-                println()
-                total++
-            }
+            val consumerTags = block.surveyPowerTags(consumers)
+            val idleConsumptTags = block.surveyPowerTags(idleOrMin)
+            val activeConsumptTags = block.surveyPowerTags(activeOrMax)
 
             allBlockData.add(BlockData(
                 typeId = typeId.ownText().replace("MyObjectBuilder_", ""),
@@ -217,7 +184,6 @@ private fun initCubeBlockDefinitions() {
             ))
         }
     }
-    println("total: $total")
 }
 
 private fun Element.surveyPowerTags(tagList: List<String>): Map<String, String> {
@@ -253,42 +219,6 @@ private fun writeItAllOut() {
         "$acc$blockData, "
     }+")")
 }
-
-//todo: blueprints only include the subtypeId, which as we've discovered isn't always enough to uniquely identify a block,
-//  because it's sometimes blank (eg for both types of gravity generator)
-//  so our only other option for a string that shows up in BOTH the blueprint AND in the CubeBlock <Definition>,
-//  is the xsi:type. But it's not identical between the two, just derivable.
-//  in a Blueprint:
-//  <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_GravityGeneratorSphere">
-//              <SubtypeName />
-//  ...
-// and in its Definition:
-//         <Definition xsi:type="MyObjectBuilder_GravityGeneratorSphereDefinition">
-//            <Id>
-//                <TypeId>GravityGeneratorSphere</TypeId>
-//                <SubtypeId />
-//            </Id>
-// so it looks like we'll have ot include the xsi:type in the BlockData, but chop off the word Definition from the end of the attribute value
-//  update:
-// not every CubeBlock <Definition> has an xsi:Type :(
-// some of the definitions that don't have a subtype, DO have an xsiType -- but not all of them!
-// in Interiors:
-// passage (Interiors:7) has neither an xsiType nor a subtypeId
-// ladder2 (Interiors:820) is the same. Are they used in the game? probably!
-// so in this case, the last (LAST) option seems to be:
-// take the xsi:Type value from the blueprint (eg MyObjectBuilder_Passage),
-// strip off the "MyObjectBuilder_" prefix,
-// search for the result as a type id
-
-
-//xsi:Type values aren't unique!
-
-//so to sum up, it's a 3-stage search:
-// try looking by subtype.
-// if the blueprint block's subtype is empty,
-// try looking by xsiType.
-// and if THAT fails,
-// then it's either a passage or ladder2, so use the
 
 fun main() {
     initComponents()
