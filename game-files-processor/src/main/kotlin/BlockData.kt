@@ -10,14 +10,15 @@ data class BlockData(
     val xsiType: String = "",
 ) {
     override fun toString(): String {
-        return "BlockData(pcu=$pcu,\n" +
+        return "BlockData(\n" +
             "\ttypeId=\"$typeId\",\n" +
+            (if(xsiType.isNotEmpty()) "\txsiType=\"$xsiType\",\n" else "") +
             "\tsubtypeId=\"$subtypeId\",\n" +
-            "\tsize='$size',\n" +
             "\thumanName=\"$humanName\",\n" +
-                (if(xsiType.isNotEmpty()) "\txsiType=\"$xsiType\",\n" else "") +
+            "\tsize='$size',\n" +
             "\tmass=$mass,\n" +
-            "\tcomponents=mapOf(" +components.entries.fold("") {acc, (key, value) -> acc+"\"$key\" to $value, "}+
+            "\tpcu=$pcu,\n"+
+            "\tcomponents=mapOf(" +components.entries.joinToString { (key, value) -> "\"$key\" to $value"}+
             ")\n" +
             ")"
     }
