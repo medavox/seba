@@ -6,6 +6,7 @@ game-files-processor/src/main/kotlin/generated
 src/main/kotlin/BlockData.kt
 src/main/kotlin/CountingMap.kt
 src/main/kotlin/generated/
+.idea
 # Edit at https://www.toptal.com/developers/gitignore?templates=intellij,kotlin,gradle
 
 ### Intellij ###
