@@ -45,19 +45,19 @@ fun processBlueprint(blueprint: XMLDocument) {
         }
     }
 
+    println("totalBlockCounts size:"+totalBlockCounts.size)
     val blockDataCounts:Map<BlockData, Int> = totalBlockCounts.mapToBlockData()
-    var totalMass: Double = 0.0
-    var totalPcu: Int = 0
-    var totalSmallBlocks: Int = 0
-    var totalLargeBlocks: Int = 0
+    println("blockDataCounts size:"+blockDataCounts.size)
+    val total = Totals()
+
 
     blockDataCounts.entries.forEach { (blockData:BlockData, count: Int) ->
-        totalMass += (count * blockData.mass)
-        totalPcu += (count * blockData.pcu)
+        total.mass += (count * blockData.mass)
+        total.pcu += (count * blockData.pcu)
 
         when (blockData.size) {
-            'L' -> totalLargeBlocks += count
-            'S' -> totalSmallBlocks += count
+            'L' -> total.largeBlocks += count
+            'S' -> total.smallBlocks += count
             else -> throw Exception("wtf blocksize is somehow still not 'L' or 'S' for ${blockData.humanName}! " +
                     "it's ${blockData.size}")
         }
@@ -71,45 +71,19 @@ fun processBlueprint(blueprint: XMLDocument) {
             pcu = count * block.pcu
         )
     }
-    showBreakdown(dataRows.sortedBy { it.name })
+    document.populateBreakdownTable(dataRows.sortedBy { it.name })
 
     //populate totals table
     val totalsTable = document.getElementById("totals_table") as HTMLTableElement
-    totalsTable.clear()
-    with(totalsTable) {
-        appendElement("tr") {
-            appendElement("td") {
-                appendElement("p") { appendText(
-                "NOTE: these numbers may be higher than the in-game Info Screen, " +
-                        "because that screen doesn't account for subgrids.")
-                }
-                appendElement("p") {appendText(
-                "The Info Screen mass also includes the contents of any inventories, eg ore, spare components etc.")
-                }
-            }
-        }
-        appendElement("tr") {
-            appendElement("td") { appendText("Total Mass") }
-            appendElement("td") { appendText(totalMass.asDynamic().toLocaleString() as String) }
-        }
-        appendElement("tr") {
-            appendElement("td") { appendText("Total PCU") }
-            appendElement("td") { appendText(totalPcu.asDynamic().toLocaleString() as String) }
-        }
-        appendElement("tr") {
-            appendElement("td") { appendText("Total Blocks") }
-            appendElement("td") { appendText((totalLargeBlocks + totalSmallBlocks).asDynamic().toLocaleString() as String) }
-        }
-        appendElement("tr") {
-            appendElement("td") { appendText("Small Blocks") }
-            appendElement("td") { appendText(totalSmallBlocks.asDynamic().toLocaleString() as String) }
-        }
-        appendElement("tr") {
-            appendElement("td") { appendText("Large Blocks") }
-            appendElement("td") { appendText(totalLargeBlocks.asDynamic().toLocaleString() as String) }
-        }
-    }
+    totalsTable.populateTotalsTable(total)
 }
+
+data class Totals(
+    var mass: Double = 0.0,
+    var pcu: Int = 0,
+    var smallBlocks: Int = 0,
+    var largeBlocks: Int = 0,
+)
 
 fun Element.getGridName(): String = firstChildElementWithTag("DisplayName")?.textContent ?: "<no name found>"
 
@@ -125,6 +99,7 @@ fun countBlocksInGrid(grid: Element): CountingMap<String> {
         val xsiType = blockElement.attributes.get("xsi:type")?.value?.replace("MyObjectBuilder_", "")?: ""
 
         blockCounts["$xsiType/$subtype"] += 1
+        //println("blockCounts[$xsiType/$subtype] = "+blockCounts["$xsiType/$subtype"])
     }
     return blockCounts
 }
@@ -170,7 +145,7 @@ fun main() {
     // load its contents and enable the rest of the page UI
     blueprintFileInput.addEventListener("change", { event ->
         val blueprint:File = event.target.asDynamic().files[0] as File
-        resetPage()
+        document.resetPage()
         println("file: ${blueprint.name}; size: ${blueprint.size}")
         val fr = FileReader()
         fr.readAsText(blueprint)
@@ -185,55 +160,6 @@ fun main() {
             Unit //it's not redundant because kotlin/js is being doopid
         }
     })
-    setupCollapsibleButton("breakdown_button", "breakdown_div")
-    setupCollapsibleButton("totals_button", "totals_div")
-}
-
-fun setupCollapsibleButton(buttonId: String, contentDivId: String) {
-    val button = document.getElementById(buttonId) as HTMLButtonElement
-    val div = document.getElementById(contentDivId) as HTMLDivElement
-    button.addEventListener("click", { event ->
-        println("bblep")
-        button.classList.toggle("active")
-        println("table height:"+div.style.maxHeight)
-        if (button.classList.contains("active")) {
-            div.style.maxHeight = div.scrollHeight.toString() + "px"
-        } else {
-            div.style.maxHeight = "0px"
-        }
-    })
-}
-
-fun resetPage() {
-    document.getElementById("unfound_blocks")?.removeClass("vizzibull")
-    document.getElementById("invalid_file")?.removeClass("vizzibull")
-    document.getElementById("unfound_blocks_list")?.clear()
-}
-
-/**called when the user presses the button to initiate the search*/
-fun showBreakdown(tableData:List<BlockRow>) {
-    val div = document.getElementById("breakdown_div") as HTMLDivElement
-    val breakdownTable = document.getElementById("breakdown_table") as HTMLTableElement
-    breakdownTable.clear()
-    breakdownTable.appendElement("tr") {
-        //name, count, mass, pcu
-        appendElement("th") {appendText("Name")}.addEventListener("click", {
-            showBreakdown(tableData.sortedBy { it.name })
-        })
-        appendElement("th") {appendText("Count")}.addEventListener("click", {
-            showBreakdown(tableData.sortedByDescending { it.count })
-        })
-        appendElement("th") {appendText("Mass (kg)")}.addEventListener("click", {
-            showBreakdown(tableData.sortedByDescending { it.mass })
-        })
-        appendElement("th") {appendText("PCU")}.addEventListener("click", {
-            showBreakdown(tableData.sortedByDescending { it.pcu })
-        })
-    }
-    for(row in tableData) {
-        row.toHtml(breakdownTable)
-    }
-
-    (document.getElementById("results") as HTMLDivElement).addClass("vizzibull")
-    div.style.maxHeight = div.scrollHeight.toString() + "px"
+    document.setupCollapsibleButton("breakdown_button", "breakdown_div")
+    document.setupCollapsibleButton("totals_button", "totals_div")
 }
