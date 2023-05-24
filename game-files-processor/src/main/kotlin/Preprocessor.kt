@@ -13,20 +13,22 @@ val components = mutableMapOf<String, Double>()
 var identical = 0//number of components where the xsiType is the same as the typId
 var empty = 0//number of components where the xsiType is empty
 
-/**Blocks in CubeBlocks_Armor_2 are missing their PCU entry. But in the game it's always 1. So just return 1*/
-private fun Element.getPcuWithFallbackForArmor2(file: String, subtypeId: String): Int? {
-    //in future, we may have to add manually-looked-up PCU values from the game here
-/*    val manualPcuLookups = mapOf(
-        "CubeBlock/DeadAstronaut" to
-    )*/
-    val pcu = this.getElementsByTag("PCU").firstOrNull()?.ownText()?.toInt()
-        ?: return if(file == "CubeBlocks_Armor_2.sbc") 1
-/*        else if(false) {
-            null
-        } */else {
-            null
+/**Some blocks don't correctly list PCU data. This function provides workarounds.
+ * Blocks in CubeBlocks_Armor_2 are missing their PCU entry.
+ *  But in the game it's always 1.
+ * ladders are uniquely missing their PCU in the XML.
+ * I've manually checked their values in the game, and it's 1 for all of them.*/
+private fun Element.getPcuWithFallback(file: String, typeSubtypeHuman: String): Int? {
+
+    return when(typeSubtypeHuman) {
+        "Ladder2/LadderShaft/Ladder Shaft" -> 1
+        "Ladder2//Ladder" -> 1
+        "Ladder2/LadderSmall/Ladder" -> 1
+        else -> {
+            this.getElementsByTag("PCU").firstOrNull()?.ownText()?.toInt()
+                ?: if(file == "CubeBlocks_Armor_2.sbc") 1 else null
         }
-    return pcu
+    }
 }
 
 private fun readResource(path: String): String =
@@ -104,9 +106,10 @@ private fun initCubeBlockDefinitions() {
                 continue
             }
             val humanName: String = localisationStrings[displayName.ownText()] ?: subtypeId
-            val pcu: Int? = block.getPcuWithFallbackForArmor2(fileName, subtypeId)
+            val xsiTypeSub = "${typeId.ownText()}/$subtypeId/$humanName"
+            val pcu: Int? = block.getPcuWithFallback (fileName, xsiTypeSub)
             if(pcu == null) {
-                println("WARNING: couldn't find PCU for '${typeId.ownText()}/$subtypeId/$humanName' in $fileName")
+                println("WARNING: couldn't find PCU for '${typeId.ownText()}/$subtypeId/$humanName', $blockSize block in $fileName")
                 continue
             }
 
