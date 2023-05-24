@@ -65,7 +65,7 @@ private fun initLocalisation() {
 }
 
 private fun Map<String, Int>.calculateMass(): Double = entries.fold(0.0) { acc, (name, count) ->
-    acc + count * (components[name] ?: 0.0)
+    acc + (count * (components[name] ?: 0.0) )
 }
 
 private fun initCubeBlockDefinitions() {
@@ -117,8 +117,9 @@ private fun initCubeBlockDefinitions() {
             val componentsRaw = block.getElementsByTag("Components").firstOrNull()?.children()?:
                 throw Exception("couldn't find Components for '${typeId.ownText()}/$subtypeId/$humanName' in $fileName")
 
-            val components:Map<String, Int> = componentsRaw.associate { component ->
-                component.attr("Subtype") to component.attr("Count").toInt()
+            val components: CountingMap<String> = CountingMap<String>()
+            componentsRaw.forEach { component ->
+                components[component.attr("Subtype")] += component.attr("Count").toInt()
             }
 
             val xsiType = block.attr("xsi:type")

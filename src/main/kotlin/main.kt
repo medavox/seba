@@ -15,6 +15,8 @@ import org.w3c.files.FileReader
 //      with just batteries?
 // display info including subgrids, without subgrids, and breakdown per grid
 // per-grid breakdown, percent of total ship
+// breakdown of blocks from DLCs: name, number & DLC of each
+// function to replace all DLC blocks in grid with non-DLC equivalents
 val unfoundBlocksList = document.getElementById("unfound_blocks_list") as HTMLUListElement
 
 fun XMLDocument.getName(): String = querySelector("Definitions > ShipBlueprints > ShipBlueprint > Id"
@@ -75,6 +77,17 @@ fun processBlueprint(blueprint: XMLDocument) {
     val totalsTable = document.getElementById("totals_table") as HTMLTableElement
     totalsTable.clear()
     with(totalsTable) {
+        appendElement("tr") {
+            appendElement("td") {
+                appendElement("p") { appendText(
+                "NOTE: these numbers may be higher than the in-game Info Screen, " +
+                        "because that screen doesn't account for subgrids.")
+                }
+                appendElement("p") {appendText(
+                "The Info Screen mass also includes the contents of any inventories, eg ore, spare components etc.")
+                }
+            }
+        }
         appendElement("tr") {
             appendElement("td") { appendText("Total Mass") }
             appendElement("td") { appendText(totalMass.asDynamic().toLocaleString() as String) }
