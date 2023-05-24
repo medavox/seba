@@ -108,7 +108,7 @@ private fun initCubeBlockDefinitions() {
         /*val cubeBlocksXmlDocs: Map<String, Element> = cubeBlocksList.mapValues {
             Jsoup.parse(it.value).root()
         }*/
-    var total = 0
+    val groupedByPowerConsumptionTag: MutableMap<String, MutableSet<String>> = mutableMapOf()
     for((fileName, definitionsFile) in cubeBlocksXmlDocs) {
         val blockDefs: Element = definitionsFile.select("Definitions>CubeBlocks")
             .firstOrNull()?: throw Exception ("Block defs not found in $fileName")
@@ -169,40 +169,17 @@ private fun initCubeBlockDefinitions() {
                 //println("xsiType for $humanName is $xsiType")
             }
 
-            val consumerTags = block.surveyPowerTags(consumers)/*.apply {
-                if(size > 1) {
-                    println("found >1 consumer tag for '${typeId.ownText()}/$subtypeId/$humanName', $blockSize block in $fileName:")
-                    println(this)
+            for(tagList in listOf(consumers, activeOrMax, idleOrMin)) {
+                for (tag in tagList) {
+                    val tagValue = block.getElementsByTag(tag).firstOrNull()?.ownText()
+                    if (tagValue != null) {
+                        if (groupedByPowerConsumptionTag.containsKey(tag)) {
+                            groupedByPowerConsumptionTag[tag]?.add(humanName)
+                        } else {
+                            groupedByPowerConsumptionTag.put(tag, mutableSetOf(humanName))
+                        }
+                    }
                 }
-            }*/
-
-            val idleConsumptTags = block.surveyPowerTags(idleOrMin)/*.apply {
-                if(size > 1) {
-                    println("found >1 idle/min tag for '${typeId.ownText()}/$subtypeId/$humanName', $blockSize block in $fileName:")
-                    println(this)
-                }
-            }*/
-
-
-            val activeConsumptTags = block.surveyPowerTags(activeOrMax)/*.apply {
-                if(size > 1) {
-                    println("found >1 active/max tag for '${typeId.ownText()}/$subtypeId/$humanName', $blockSize block in $fileName:")
-                    println(this)
-                }
-            }*/
-
-            //it found wheels
-            //if(consumerTags.isNotEmpty() && (activeConsumptTags.isNotEmpty() || idleConsumptTags.isNotEmpty())) {
-            //it found thrusters, gates, ...
-//            if(activeConsumptTags.isNotEmpty()) {
-            //if(activeConsumptTags.isNotEmpty() && idleConsumptTags.isNotEmpty()) {
-            if(consumerTags.isEmpty() && activeConsumptTags.isNotEmpty() && idleConsumptTags.isEmpty()) {
-                println("block '${typeId.ownText()}/$subtypeId/$humanName', $blockSize block in $fileName:")
-//                println("\tconsumer tags: $consumerTags")
-                println("\tactive/max tags: $activeConsumptTags")
-//                println("\tidle/min tags: $idleConsumptTags")
-                println()
-                total++
             }
 
             allBlockData.add(BlockData(
@@ -219,18 +196,12 @@ private fun initCubeBlockDefinitions() {
             ))
         }
     }
-    println("total: $total")
-}
-
-private fun Element.surveyPowerTags(tagList: List<String>): Map<String, String> {
-    val tagsOnBlock: MutableMap<String, String> = mutableMapOf()
-    for(tag in tagList) {
-        val tagValue = getElementsByTag(tag).firstOrNull()?.ownText()
-        if(tagValue != null) {
-            tagsOnBlock.put(tag, tagValue)
-        }
-    }
-    return tagsOnBlock
+    print("${groupedByPowerConsumptionTag.size} tags total:")
+    println(groupedByPowerConsumptionTag.entries.sortedByDescending { it.value.size }.fold("") { acc, (key, value) ->
+        acc+"\n${value.size} blocks with tag '$key':"+value.fold("") { valAcc, blockName ->
+            valAcc+"\n\t$blockName"
+        }+"\n"
+    })
 }
 
 private fun writeItAllOut() {
