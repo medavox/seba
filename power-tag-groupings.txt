@@ -1,0 +1,34 @@
+the lists of examples aren't guaranteed to be comprehensive,
+because I compiled them by hand
+
+3 blocks with only an active/max
+    OperationalPowerConsumption
+    MaxBroadcastPowerDrainkw
+
+105 blocks with only a consumer tag
+    RequiredPowerInput
+    PowerInput
+
+6 blocks with only an idle/min tag
+    IdlePowerConsumption
+    PowerInputIdle
+    StandbyPowerConsumption
+
+0 blocks with a consumer tag and an active tag
+
+64 blocks with an active/max and an idle/min
+    OperationalPowerConsumption/StandbyPowerConsumption     -srv kits, assemblers, o2/h2 gens, refineries, air vents, hydro tanks, oxy tanks
+    MaxPowerConsumption/MinPowerConsumption                 - thrusters
+    PowerConsumptionMoving/PowerConsumptionIdle             - warfare hangar doors, parachute hatches, gate, sliding door, airtight hangar door
+    MaxSafeZonePowerDrainkW/MinSafeZonePowerDrainkW         -safe zone
+    PowerInputLasing,PowerInputTurning/PowerInputIdle       - laser antennae
+
+33 blocks with a consumer and an idle/min
+    RequiredPowerInput/RequiredIdlePowerInput               -wheels
+    ConsumptionPower/BasePowerInput                         -spherical grav
+
+0 blocks with all three types of power consumption tag
+
+775 blocks with no power consumption tags
+
+totalling 986 blocks, which is all of them at the time of this survey
