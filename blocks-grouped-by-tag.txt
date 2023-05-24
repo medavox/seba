@@ -1,0 +1,217 @@
+76 blocks with tag 'RequiredPowerInput':
+	Piston
+	Rotor
+	Advanced Rotor
+	Advanced Rotor 3x3
+	Hinge
+	Hinge 3x3
+	Text Panel
+	Wide LCD Panel
+	LCD Panel
+	Corner LCD Top
+	Corner LCD Bottom
+	Corner LCD Flat Top
+	Corner LCD Flat Bottom
+	Inset Light
+	Top Mounted Camera
+	Emotion Controller
+	Exhaust Pipe
+	Offroad Wheel Suspension 3x3 Right
+	Offroad Wheel Suspension 5x5 Right
+	Offroad Wheel Suspension 1x1 Right
+	Offroad Wheel Suspension 2x2 Right
+	Offroad Wheel Suspension 3x3 Left
+	Offroad Wheel Suspension 5x5 Left
+	Offroad Wheel Suspension 1x1 Left
+	Offroad Wheel Suspension 2x2 Left
+	Offset Light
+	Offset Spotlight
+	Spotlight
+	Interior Light
+	Corner Light
+	Corner Light - Double
+	Willis Duct Light
+	Remote Control
+	Store
+	Contracts
+	Vending Machine
+	ATM
+	Wheel Suspension 3x3 Right
+	Wheel Suspension 5x5 Right
+	Wheel Suspension 1x1 Right
+	Wheel Suspension 2x2 Right
+	Wheel Suspension 3x3 Left
+	Wheel Suspension 5x5 Left
+	Wheel Suspension 1x1 Left
+	Wheel Suspension 2x2 Left
+	Sci-Fi LCD Panel 5x5
+	Sci-Fi LCD Panel 5x3
+	Sci-Fi LCD Panel 3x3
+	Gravity Generator
+	Artificial Mass
+	Space Ball
+	Passage 3 Light
+	Collector
+	Jump Drive
+	Camera
+	Light Panel
+	Warfare Battery
+	Searchlight
+	Heat Vent
+	Projector
+	Event Controller
+	AI Recorder (Task)
+	AI Basic (Task)
+	AI Flight (Move)
+	AI Defensive (Combat)
+	AI Offensive (Combat)
+	Console Block
+	Gyroscope
+	Dispenser
+	Jukebox
+	Lab Equipment
+	Medical Station
+	Transparent LCD
+	Rotating Light
+	Battery
+	Small Battery
+
+17 blocks with tag 'OperationalPowerConsumption':
+	Air Vent Fan
+	Air Vent Fan Full
+	Industrial Hydrogen Tank
+	Industrial Assembler
+	Industrial Refinery
+	Oxygen Tank
+	Hydrogen Tank
+	Small Hydrogen Tank
+	Air Vent
+	Air Vent Full
+	Refinery
+	Basic Refinery
+	O2/H2 Generator
+	Assembler
+	Basic Assembler
+	Survival Kit
+	Oxygen Farm
+
+17 blocks with tag 'StandbyPowerConsumption':
+	Air Vent Fan
+	Air Vent Fan Full
+	Industrial Hydrogen Tank
+	Industrial Assembler
+	Industrial Refinery
+	Oxygen Tank
+	Hydrogen Tank
+	Small Hydrogen Tank
+	Air Vent
+	Air Vent Full
+	Refinery
+	Basic Refinery
+	O2/H2 Generator
+	Assembler
+	Basic Assembler
+	Survival Kit
+	Railgun
+
+16 blocks with tag 'RequiredIdlePowerInput':
+	Offroad Wheel Suspension 3x3 Right
+	Offroad Wheel Suspension 5x5 Right
+	Offroad Wheel Suspension 1x1 Right
+	Offroad Wheel Suspension 2x2 Right
+	Offroad Wheel Suspension 3x3 Left
+	Offroad Wheel Suspension 5x5 Left
+	Offroad Wheel Suspension 1x1 Left
+	Offroad Wheel Suspension 2x2 Left
+	Wheel Suspension 3x3 Right
+	Wheel Suspension 5x5 Right
+	Wheel Suspension 1x1 Right
+	Wheel Suspension 2x2 Right
+	Wheel Suspension 3x3 Left
+	Wheel Suspension 5x5 Left
+	Wheel Suspension 1x1 Left
+	Wheel Suspension 2x2 Left
+
+14 blocks with tag 'MaxPowerConsumption':
+	Industrial Large Hydrogen Thruster
+	Industrial Hydrogen Thruster
+	Sci-Fi Ion Thruster
+	Sci-Fi Large Ion Thruster
+	Sci-Fi Large Atmospheric Thruster
+	Sci-Fi Atmospheric Thruster
+	Warfare Ion Thruster
+	Large Warfare Ion Thruster
+	Ion Thruster
+	Large Ion Thruster
+	Large Hydrogen Thruster
+	Hydrogen Thruster
+	Large Atmospheric Thruster
+	Atmospheric Thruster
+
+14 blocks with tag 'MinPowerConsumption':
+	Industrial Large Hydrogen Thruster
+	Industrial Hydrogen Thruster
+	Sci-Fi Ion Thruster
+	Sci-Fi Large Ion Thruster
+	Sci-Fi Large Atmospheric Thruster
+	Sci-Fi Atmospheric Thruster
+	Warfare Ion Thruster
+	Large Warfare Ion Thruster
+	Ion Thruster
+	Large Ion Thruster
+	Large Hydrogen Thruster
+	Hydrogen Thruster
+	Large Atmospheric Thruster
+	Atmospheric Thruster
+
+7 blocks with tag 'PowerConsumptionMoving':
+	Airtight Hangar Door
+	Sliding Door
+	Gate
+	Parachute Hatch
+	Warfare Hangar Door
+	Warfare Hangar Door Windowed
+	Warfare Hangar Door 2
+
+7 blocks with tag 'PowerConsumptionIdle':
+	Airtight Hangar Door
+	Sliding Door
+	Gate
+	Parachute Hatch
+	Warfare Hangar Door
+	Warfare Hangar Door Windowed
+	Warfare Hangar Door 2
+
+3 blocks with tag 'PowerInput':
+	Industrial Conveyor Sorter
+	Conveyor Sorter
+	Small Conveyor Sorter
+
+2 blocks with tag 'PowerInputIdle':
+	Laser Antenna
+	Custom Turret Controller
+
+2 blocks with tag 'IdlePowerConsumption':
+	Cryo Chamber
+	Bed
+
+1 blocks with tag 'MaxBroadcastPowerDrainkw':
+	Beacon
+
+1 blocks with tag 'PowerInputLasing':
+	Laser Antenna
+
+1 blocks with tag 'PowerInputTurning':
+	Laser Antenna
+
+1 blocks with tag 'MaxSafeZonePowerDrainkW':
+	Safe Zone
+
+1 blocks with tag 'MinSafeZonePowerDrainkW':
+	Safe Zone
+
+1 blocks with tag 'ConsumptionPower':
+	Spherical Gravity Generator
+
+1 blocks with tag 'BasePowerInput':
+	Spherical Gravity Generator

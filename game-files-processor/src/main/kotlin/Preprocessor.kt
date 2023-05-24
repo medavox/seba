@@ -12,6 +12,8 @@ val components = mutableMapOf<String, Double>()
 
 var identical = 0//number of components where the xsiType is the same as the typId
 var empty = 0//number of components where the xsiType is empty
+//TODO: railgun seems to be missing its recharge power data.
+// possible leads: WeaponDefinitionId, ResourceSinkGroup, InventoryFillFactorMin
 
 val consumers = listOf(
     "ConsumptionPower",
@@ -106,6 +108,7 @@ private fun initCubeBlockDefinitions() {
         /*val cubeBlocksXmlDocs: Map<String, Element> = cubeBlocksList.mapValues {
             Jsoup.parse(it.value).root()
         }*/
+    val groupedByPowerConsumptionTag: MutableMap<String, MutableSet<String>> = mutableMapOf()
     for((fileName, definitionsFile) in cubeBlocksXmlDocs) {
         val blockDefs: Element = definitionsFile.select("Definitions>CubeBlocks")
             .firstOrNull()?: throw Exception ("Block defs not found in $fileName")
@@ -166,9 +169,18 @@ private fun initCubeBlockDefinitions() {
                 //println("xsiType for $humanName is $xsiType")
             }
 
-            val consumerTags = block.surveyPowerTags(consumers)
-            val idleConsumptTags = block.surveyPowerTags(idleOrMin)
-            val activeConsumptTags = block.surveyPowerTags(activeOrMax)
+            for(tagList in listOf(consumers, activeOrMax, idleOrMin)) {
+                for (tag in tagList) {
+                    val tagValue = block.getElementsByTag(tag).firstOrNull()?.ownText()
+                    if (tagValue != null) {
+                        if (groupedByPowerConsumptionTag.containsKey(tag)) {
+                            groupedByPowerConsumptionTag[tag]?.add(humanName)
+                        } else {
+                            groupedByPowerConsumptionTag.put(tag, mutableSetOf(humanName))
+                        }
+                    }
+                }
+            }
 
             allBlockData.add(BlockData(
                 typeId = typeId.ownText().replace("MyObjectBuilder_", ""),
@@ -184,17 +196,12 @@ private fun initCubeBlockDefinitions() {
             ))
         }
     }
-}
-
-private fun Element.surveyPowerTags(tagList: List<String>): Map<String, String> {
-    val tagsOnBlock: MutableMap<String, String> = mutableMapOf()
-    for(tag in tagList) {
-        val tagValue = getElementsByTag(tag).firstOrNull()?.ownText()
-        if(tagValue != null) {
-            tagsOnBlock.put(tag, tagValue)
-        }
-    }
-    return tagsOnBlock
+    print("${groupedByPowerConsumptionTag.size} tags total:")
+    println(groupedByPowerConsumptionTag.entries.sortedByDescending { it.value.size }.fold("") { acc, (key, value) ->
+        acc+"\n${value.size} blocks with tag '$key':"+value.fold("") { valAcc, blockName ->
+            valAcc+"\n\t$blockName"
+        }+"\n"
+    })
 }
 
 private fun writeItAllOut() {

@@ -2,17 +2,17 @@ the lists of examples aren't guaranteed to be comprehensive,
 because I compiled them by hand
 
 3 blocks with only an active/max
-    OperationalPowerConsumption
-    MaxBroadcastPowerDrainkw
+    OperationalPowerConsumption                             - oxy farm
+    MaxBroadcastPowerDrainkw                                - beacons
 
 105 blocks with only a consumer tag
-    RequiredPowerInput
-    PowerInput
+    RequiredPowerInput - batteries, lights, LCD panels, medical station, lab equipment, jukebox, food dispenser, gyroscopes, console block, AI blocks, event controllers, projectors, heat vents, camera, jump drive, passage 3 light, space ball, artifical mass, linear grav gen, ATM, vending machine, contracts, store, remote controls, willis duct light, exhaust pipes, emotion controllers, top mounted cameras, text panels, hinges, rotors, pistons
+    PowerInput - conveyor sorters
 
 6 blocks with only an idle/min tag
-    IdlePowerConsumption
-    PowerInputIdle
-    StandbyPowerConsumption
+    IdlePowerConsumption                                    -cryo chambers
+    PowerInputIdle                                          -custom turret controllers
+    StandbyPowerConsumption                                 - bed, railgun
 
 0 blocks with a consumer tag and an active tag
 
