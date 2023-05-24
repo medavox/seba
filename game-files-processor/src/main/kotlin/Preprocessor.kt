@@ -12,6 +12,8 @@ val components = mutableMapOf<String, Double>()
 
 var identical = 0//number of components where the xsiType is the same as the typId
 var empty = 0//number of components where the xsiType is empty
+//TODO: railgun seems to be missing its recharge power data.
+// possible leads: WeaponDefinitionId, ResourceSinkGroup, InventoryFillFactorMin
 
 val consumers = listOf(
     "ConsumptionPower",
@@ -194,11 +196,11 @@ private fun initCubeBlockDefinitions() {
             //it found thrusters, gates, ...
 //            if(activeConsumptTags.isNotEmpty()) {
             //if(activeConsumptTags.isNotEmpty() && idleConsumptTags.isNotEmpty()) {
-            if(consumerTags.isEmpty() && activeConsumptTags.isNotEmpty() && idleConsumptTags.isNotEmpty()) {
+            if(consumerTags.isEmpty() && activeConsumptTags.isNotEmpty() && idleConsumptTags.isEmpty()) {
                 println("block '${typeId.ownText()}/$subtypeId/$humanName', $blockSize block in $fileName:")
 //                println("\tconsumer tags: $consumerTags")
                 println("\tactive/max tags: $activeConsumptTags")
-                println("\tidle/min tags: $idleConsumptTags")
+//                println("\tidle/min tags: $idleConsumptTags")
                 println()
                 total++
             }

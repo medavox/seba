@@ -2,17 +2,17 @@ the lists of examples aren't guaranteed to be comprehensive,
 because I compiled them by hand
 
 3 blocks with only an active/max
-    OperationalPowerConsumption
-    MaxBroadcastPowerDrainkw
+    OperationalPowerConsumption                             - oxy farm
+    MaxBroadcastPowerDrainkw                                - beacons
 
 105 blocks with only a consumer tag
     RequiredPowerInput
     PowerInput
 
 6 blocks with only an idle/min tag
-    IdlePowerConsumption
-    PowerInputIdle
-    StandbyPowerConsumption
+    IdlePowerConsumption                                    -cryo chambers
+    PowerInputIdle                                          -custom turret controllers
+    StandbyPowerConsumption                                 - bed, railgun
 
 0 blocks with a consumer tag and an active tag
 
