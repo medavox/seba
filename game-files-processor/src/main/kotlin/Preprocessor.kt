@@ -13,6 +13,7 @@ val components = mutableMapOf<String, Double>()
 var identical = 0//number of components where the xsiType is the same as the typId
 var empty = 0//number of components where the xsiType is empty
 //TODO: railgun seems to be missing its recharge power data.
+// antenna is missing a powerinput or any other
 // possible leads: WeaponDefinitionId, ResourceSinkGroup, InventoryFillFactorMin
 
 val idleOrMin = listOf(
@@ -158,6 +159,8 @@ private fun initCubeBlockDefinitions() {
             val powerOutput:Int = block.getElementsByTag("MaxPowerOutput")
                 .firstOrNull()?.ownText()?.toDouble()?.times(1000)?.toInt() ?: 0
 
+            val minPowerInput = block.getPowerTag(idleOrMin)
+            val maxPowerInput = block.getPowerTag(activeOrMax)
             if(xsiType == typeId.ownText()) {
                 identical++
             } else if(xsiType.isEmpty()) {
@@ -177,9 +180,23 @@ private fun initCubeBlockDefinitions() {
                 xsiType = xsiType,
                 maxPowerOutputKw = powerOutput,
                 powerStorageKw = powerStorage,
+                pwrInputActiveMaxKw = maxPowerInput,
+                pwrInputIdleMinKw = minPowerInput,
             ))
         }
     }
+}
+
+fun Element.getPowerTag(tagList:List<String>): Int {
+    val foundTags:List<Int> = tagList.mapNotNull { tag ->
+        val l = getElementsByTag(tag).firstOrNull()?.ownText()
+        if(l != null && !tag.lowercase().endsWith("kw")) {
+            l.toDouble().times(1000).toInt()
+        } else l?.toInt()
+    }
+    if(foundTags.isEmpty()) return 0
+    if(foundTags.size > 1) return foundTags.max()
+    return foundTags.first()
 }
 
 private fun writeItAllOut() {
