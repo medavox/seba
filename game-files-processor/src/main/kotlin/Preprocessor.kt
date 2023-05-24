@@ -13,6 +13,31 @@ val components = mutableMapOf<String, Double>()
 var identical = 0//number of components where the xsiType is the same as the typId
 var empty = 0//number of components where the xsiType is empty
 
+val consumers = listOf(
+    "ConsumptionPower",
+    "RequiredPowerInput",
+    "PowerInput",
+)
+val idleOrMin = listOf(
+    "PowerConsumptionIdle",
+    "IdlePowerConsumption",
+    "PowerInputIdle",
+    "StandbyPowerConsumption",
+    "RequiredIdlePowerInput",
+    "MinSafeZonePowerDrainkW",
+    "BasePowerInput",
+    "MinPowerConsumption",
+)
+val activeOrMax = listOf(
+    "MaxBroadcastPowerDrainkw",
+    "PowerConsumptionMoving",
+    "OperationalPowerConsumption",
+    "PowerInputLasing",
+    "PowerInputTurning",
+    "MaxSafeZonePowerDrainkW",
+    "MaxPowerConsumption",
+)
+
 /**Some blocks don't correctly list PCU data. This function provides workarounds.
  * Blocks in CubeBlocks_Armor_2 are missing their PCU entry.
  *  But in the game it's always 1.
