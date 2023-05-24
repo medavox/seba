@@ -8,11 +8,15 @@ data class BlockData(
     val mass: Double,
     val size: Char,
     val xsiType: String = "",
+    val powerStorageKw: Int = 0,
+    val maxPowerOutputKw: Int = 0,
 ) {
     override fun toString(): String {
         return "BlockData(\n" +
             "\ttypeId=\"$typeId\",\n" +
             (if(xsiType.isNotEmpty()) "\txsiType=\"$xsiType\",\n" else "") +
+            (if(powerStorageKw != 0) "\tpowerStorageKw=$powerStorageKw,\n" else "") +
+            (if(maxPowerOutputKw != 0) "\tmaxPowerOutputKw=$maxPowerOutputKw,\n" else "") +
             "\tsubtypeId=\"$subtypeId\",\n" +
             "\thumanName=\"$humanName\",\n" +
             "\tsize='$size',\n" +

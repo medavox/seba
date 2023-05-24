@@ -129,6 +129,11 @@ private fun initCubeBlockDefinitions() {
                 .replace("Definition", "")
                 .replace("MyObjectBuilder_", "")
 
+            val powerStorage:Int = block.getElementsByTag("MaxStoredPower")
+                .firstOrNull()?.ownText()?.toDouble()?.times(1000)?.toInt() ?: 0
+            val powerOutput:Int = block.getElementsByTag("MaxPowerOutput")
+                .firstOrNull()?.ownText()?.toDouble()?.times(1000)?.toInt() ?: 0
+
             if(xsiType == typeId.ownText()) {
                 identical++
             } else if(xsiType.isEmpty()) {
@@ -145,7 +150,9 @@ private fun initCubeBlockDefinitions() {
                 size = if(blockSize == "Large") 'L' else 'S',
                 components = components,
                 mass = components.calculateMass(),
-                xsiType = xsiType
+                xsiType = xsiType,
+                maxPowerOutputKw = powerOutput,
+                powerStorageKw = powerStorage,
             ))
         }
     }

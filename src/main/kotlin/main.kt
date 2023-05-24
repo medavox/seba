@@ -66,4 +66,5 @@ fun main() {
     })
     document.setupCollapsibleButton("breakdown_button", "breakdown_div")
     document.setupCollapsibleButton("totals_button", "totals_div")
+    document.setupCollapsibleButton("power_stats_button", "power_stats_div")
 }
