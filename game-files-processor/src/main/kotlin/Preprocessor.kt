@@ -108,7 +108,7 @@ private fun initCubeBlockDefinitions() {
         /*val cubeBlocksXmlDocs: Map<String, Element> = cubeBlocksList.mapValues {
             Jsoup.parse(it.value).root()
         }*/
-    var total = 0
+    val foundBlocks = mutableListOf<String>()
     for((fileName, definitionsFile) in cubeBlocksXmlDocs) {
         val blockDefs: Element = definitionsFile.select("Definitions>CubeBlocks")
             .firstOrNull()?: throw Exception ("Block defs not found in $fileName")
@@ -169,40 +169,34 @@ private fun initCubeBlockDefinitions() {
                 //println("xsiType for $humanName is $xsiType")
             }
 
-            val consumerTags = block.surveyPowerTags(consumers)/*.apply {
-                if(size > 1) {
-                    println("found >1 consumer tag for '${typeId.ownText()}/$subtypeId/$humanName', $blockSize block in $fileName:")
-                    println(this)
+            val consumerTags = block.surveyPowerTags(consumers)
+            val idleConsumptTags = block.surveyPowerTags(idleOrMin)
+            val activeConsumptTags = block.surveyPowerTags(activeOrMax)
+
+            if(consumerTags.isEmpty() && activeConsumptTags.isEmpty() && idleConsumptTags.isEmpty()) {
+                if(!humanName.lowercase().contains("armor") &&
+                    !subtypeId.lowercase().contains("symbol") &&
+                    !subtypeId.lowercase().contains("window") &&
+                    !subtypeId.lowercase().contains("neontubes") &&
+                    !subtypeId.lowercase().contains("warningsign") &&
+                    !subtypeId.lowercase().contains("beamblock") &&
+                    !subtypeId.lowercase().contains("conveyor") &&
+                    !subtypeId.lowercase().contains("deadbody") &&
+                    !subtypeId.lowercase().contains("rail") &&
+                    !subtypeId.lowercase().contains("stair") &&
+                    !humanName.lowercase().contains("reactor") &&
+                    !humanName.lowercase().contains(" part") &&
+                    !humanName.lowercase().contains("willis duct") &&
+                    !subtypeId.lowercase().contains("solarpanel") &&
+                    !subtypeId.lowercase().contains("passage") &&
+                    !subtypeId.lowercase().contains("catwalk")
+                ) {
+                    foundBlocks.add("${typeId.ownText()}/$subtypeId/$humanName, $blockSize block in $fileName")
+//                    println("\tconsumer tags: $consumerTags")
+//                    println("\tactive/max tags: $activeConsumptTags")
+//                    println("\tidle/min tags: $idleConsumptTags")
+//                    println()
                 }
-            }*/
-
-            val idleConsumptTags = block.surveyPowerTags(idleOrMin)/*.apply {
-                if(size > 1) {
-                    println("found >1 idle/min tag for '${typeId.ownText()}/$subtypeId/$humanName', $blockSize block in $fileName:")
-                    println(this)
-                }
-            }*/
-
-
-            val activeConsumptTags = block.surveyPowerTags(activeOrMax)/*.apply {
-                if(size > 1) {
-                    println("found >1 active/max tag for '${typeId.ownText()}/$subtypeId/$humanName', $blockSize block in $fileName:")
-                    println(this)
-                }
-            }*/
-
-            //it found wheels
-            //if(consumerTags.isNotEmpty() && (activeConsumptTags.isNotEmpty() || idleConsumptTags.isNotEmpty())) {
-            //it found thrusters, gates, ...
-//            if(activeConsumptTags.isNotEmpty()) {
-            //if(activeConsumptTags.isNotEmpty() && idleConsumptTags.isNotEmpty()) {
-            if(consumerTags.isEmpty() && activeConsumptTags.isNotEmpty() && idleConsumptTags.isEmpty()) {
-                println("block '${typeId.ownText()}/$subtypeId/$humanName', $blockSize block in $fileName:")
-//                println("\tconsumer tags: $consumerTags")
-                println("\tactive/max tags: $activeConsumptTags")
-//                println("\tidle/min tags: $idleConsumptTags")
-                println()
-                total++
             }
 
             allBlockData.add(BlockData(
@@ -219,7 +213,8 @@ private fun initCubeBlockDefinitions() {
             ))
         }
     }
-    println("total: $total")
+    println(foundBlocks.sorted().joinToString(separator = "\n") {it})
+    println("${foundBlocks.size} total" )
 }
 
 private fun Element.surveyPowerTags(tagList: List<String>): Map<String, String> {
