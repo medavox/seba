@@ -99,3 +99,8 @@ data class Totals(
     var smallBlocks: Int = 0,
     var largeBlocks: Int = 0,
 )
+
+data class PowerStats(
+    var totalStorageKilowatts: Double,
+    val generationKilowatts:CountingMap<String>,//human name to watts. XML values will need multiplying by 1000
+)
