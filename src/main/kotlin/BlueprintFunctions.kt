@@ -1,6 +1,8 @@
 import kotlinx.browser.document
 import org.w3c.dom.*
 
+/**Functions which operate on a blueprint file's XML*/
+
 private fun XMLDocument.getBlueprintName(): String = querySelector("Definitions > ShipBlueprints > ShipBlueprint > Id"
 )?.attributes?.get("Subtype")?.value ?: "<unknown name>"
 

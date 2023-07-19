@@ -4,6 +4,19 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
 
+/**
+ * This file extracts the needed data (names, mass, PCU, components to build) from the game SBC files,
+ * and outputs it as programmatically-generated Kotlin into the file `data.kt`.
+ *
+ * The Kotlin declares a data class for every CubeBlock in the game, containing the pertinent stats above.
+ *
+ * It also copies the files containing the BlockData and CountingMap classes over to the web app module.
+ * Not a pretty solution, but much more straightforward and easy to understand (and therefore maintain) than using gradle artifacts.
+ *
+ * All this is run on a desktop JVM before the actual web app is even compiled, so performance is less of an requirement.
+ *
+ * It's a totally separate execution environment from the web app itself.*/
+
 private val resDonor = object{}
 val allBlockData: MutableList<BlockData> = mutableListOf()
 val localisationStrings = mutableMapOf<String, String>()
@@ -288,6 +301,8 @@ private fun writeItAllOut() {
 // then it's either a passage or ladder2, so use the
 
 fun main() {
+    //the ordering of these init functions matters,
+    // because the later ones rely on data initialised in earlier ones
     initComponents()
     initLocalisation()
     initCubeBlockDefinitions()
