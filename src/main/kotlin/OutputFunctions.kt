@@ -4,6 +4,8 @@ import org.w3c.dom.HTMLButtonElement
 import org.w3c.dom.HTMLDivElement
 import org.w3c.dom.HTMLTableElement
 
+/**Functions which operate on the HTML of the web app; that is, produce output in the web app.*/
+
 fun Document.setupCollapsibleButton(buttonId: String, contentDivId: String) {
     val button = this.getElementById(buttonId) as HTMLButtonElement
     val div = this.getElementById(contentDivId) as HTMLDivElement

@@ -1,6 +1,8 @@
 import kotlinx.browser.document
 import org.w3c.dom.*
 
+/**Functions which operate on a blueprint file's XML*/
+
 private fun XMLDocument.getBlueprintName(): String = querySelector("Definitions > ShipBlueprints > ShipBlueprint > Id"
 )?.attributes?.get("Subtype")?.value ?: "<unknown name>"
 
@@ -96,4 +98,9 @@ data class Totals(
     var pcu: Int = 0,
     var smallBlocks: Int = 0,
     var largeBlocks: Int = 0,
+)
+
+data class PowerStats(
+    var totalStorageKilowatts: Double,
+    val generationKilowatts:CountingMap<String>,//human name to watts. XML values will need multiplying by 1000
 )

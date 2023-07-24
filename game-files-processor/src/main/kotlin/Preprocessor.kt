@@ -4,6 +4,19 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
 
+/**
+ * This file extracts the needed data (names, mass, PCU, components to build) from the game SBC files,
+ * and outputs it as programmatically-generated Kotlin into the file `data.kt`.
+ *
+ * The Kotlin declares a data class for every CubeBlock in the game, containing the pertinent stats above.
+ *
+ * It also copies the files containing the BlockData and CountingMap classes over to the web app module.
+ * Not a pretty solution, but much more straightforward and easy to understand (and therefore maintain) than using gradle artifacts.
+ *
+ * All this is run on a desktop JVM before the actual web app is even compiled, so performance is less of an requirement.
+ *
+ * It's a totally separate execution environment from the web app itself.*/
+
 private val resDonor = object{}
 val allBlockData: MutableList<BlockData> = mutableListOf()
 val localisationStrings = mutableMapOf<String, String>()
@@ -16,6 +29,11 @@ var empty = 0//number of components where the xsiType is empty
 // antenna is missing a powerinput or any other
 // possible leads: WeaponDefinitionId, ResourceSinkGroup, InventoryFillFactorMin
 
+val consumers = listOf(
+    "ConsumptionPower",
+    "RequiredPowerInput",
+    "PowerInput",
+)
 val idleOrMin = listOf(
     "PowerConsumptionIdle",
     "IdlePowerConsumption",
@@ -27,9 +45,6 @@ val idleOrMin = listOf(
     "MinPowerConsumption",
 )
 val activeOrMax = listOf(
-    "ConsumptionPower",
-    "RequiredPowerInput",
-    "PowerInput",
     "MaxBroadcastPowerDrainkw",
     "PowerConsumptionMoving",
     "OperationalPowerConsumption",
@@ -99,14 +114,15 @@ private fun Map<String, Int>.calculateMass(): Double = entries.fold(0.0) { acc, 
 private fun initCubeBlockDefinitions() {
     val cubeBlocksDir = File(".", "game-files-processor/src/main/resources/CubeBlocks")
     val cubeBlocksFiles: List<File> = cubeBlocksDir.listFiles()?.toList() ?:
-        throw IOException("couldn't list contents of "+cubeBlocksDir.absolutePath)
+    throw IOException("couldn't list contents of "+cubeBlocksDir.absolutePath)
     println(File(".").absolutePath)
     val cubeBlocksXmlDocs: Map<String, Element> = cubeBlocksFiles.associateTo(mutableMapOf()) {
         it.name to Jsoup.parse(readResource("CubeBlocks/${it.name}"))
     }
-        /*val cubeBlocksXmlDocs: Map<String, Element> = cubeBlocksList.mapValues {
-            Jsoup.parse(it.value).root()
-        }*/
+    /*val cubeBlocksXmlDocs: Map<String, Element> = cubeBlocksList.mapValues {
+        Jsoup.parse(it.value).root()
+    }*/
+    val foundBlocks = mutableListOf<String>()
     for((fileName, definitionsFile) in cubeBlocksXmlDocs) {
         val blockDefs: Element = definitionsFile.select("Definitions>CubeBlocks")
             .firstOrNull()?: throw Exception ("Block defs not found in $fileName")
@@ -143,9 +159,9 @@ private fun initCubeBlockDefinitions() {
             }
 
             val componentsRaw = block.getElementsByTag("Components").firstOrNull()?.children()?:
-                throw Exception("couldn't find Components for '${typeId.ownText()}/$subtypeId/$humanName' in $fileName")
+            throw Exception("couldn't find Components for '${typeId.ownText()}/$subtypeId/$humanName' in $fileName")
 
-            val components = CountingMap<String>()
+            val components: CountingMap<String> = CountingMap<String>()
             componentsRaw.forEach { component ->
                 components[component.attr("Subtype")] += component.attr("Count").toInt()
             }
@@ -169,6 +185,36 @@ private fun initCubeBlockDefinitions() {
                 //println("xsiType for $humanName is $xsiType")
             }
 
+            val consumerTags = block.surveyPowerTags(consumers)
+            val idleConsumptTags = block.surveyPowerTags(idleOrMin)
+            val activeConsumptTags = block.surveyPowerTags(activeOrMax)
+
+            if(consumerTags.isEmpty() && activeConsumptTags.isEmpty() && idleConsumptTags.isEmpty()) {
+                if(!humanName.lowercase().contains("armor") &&
+                    !subtypeId.lowercase().contains("symbol") &&
+                    !subtypeId.lowercase().contains("window") &&
+                    !subtypeId.lowercase().contains("neontubes") &&
+                    !subtypeId.lowercase().contains("warningsign") &&
+                    !subtypeId.lowercase().contains("beamblock") &&
+                    !subtypeId.lowercase().contains("conveyor") &&
+                    !subtypeId.lowercase().contains("deadbody") &&
+                    !subtypeId.lowercase().contains("rail") &&
+                    !subtypeId.lowercase().contains("stair") &&
+                    !humanName.lowercase().contains("reactor") &&
+                    !humanName.lowercase().contains(" part") &&
+                    !humanName.lowercase().contains("willis duct") &&
+                    !subtypeId.lowercase().contains("solarpanel") &&
+                    !subtypeId.lowercase().contains("passage") &&
+                    !subtypeId.lowercase().contains("catwalk")
+                ) {
+                    foundBlocks.add("${typeId.ownText()}/$subtypeId/$humanName, $blockSize block in $fileName")
+//                    println("\tconsumer tags: $consumerTags")
+//                    println("\tactive/max tags: $activeConsumptTags")
+//                    println("\tidle/min tags: $idleConsumptTags")
+//                    println()
+                }
+            }
+
             allBlockData.add(BlockData(
                 typeId = typeId.ownText().replace("MyObjectBuilder_", ""),
                 subtypeId = subtypeId,
@@ -185,6 +231,19 @@ private fun initCubeBlockDefinitions() {
             ))
         }
     }
+    println(foundBlocks.sorted().joinToString(separator = "\n") {it})
+    println("${foundBlocks.size} total" )
+}
+
+private fun Element.surveyPowerTags(tagList: List<String>): Map<String, String> {
+    val tagsOnBlock: MutableMap<String, String> = mutableMapOf()
+    for(tag in tagList) {
+        val tagValue = getElementsByTag(tag).firstOrNull()?.ownText()
+        if(tagValue != null) {
+            tagsOnBlock.put(tag, tagValue)
+        }
+    }
+    return tagsOnBlock
 }
 
 fun Element.getPowerTag(tagList:List<String>): Int {
@@ -222,7 +281,45 @@ private fun writeItAllOut() {
     }+")")
 }
 
+//todo: blueprints only include the subtypeId, which as we've discovered isn't always enough to uniquely identify a block,
+//  because it's sometimes blank (eg for both types of gravity generator)
+//  so our only other option for a string that shows up in BOTH the blueprint AND in the CubeBlock <Definition>,
+//  is the xsi:type. But it's not identical between the two, just derivable.
+//  in a Blueprint:
+//  <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_GravityGeneratorSphere">
+//              <SubtypeName />
+//  ...
+// and in its Definition:
+//         <Definition xsi:type="MyObjectBuilder_GravityGeneratorSphereDefinition">
+//            <Id>
+//                <TypeId>GravityGeneratorSphere</TypeId>
+//                <SubtypeId />
+//            </Id>
+// so it looks like we'll have ot include the xsi:type in the BlockData, but chop off the word Definition from the end of the attribute value
+//  update:
+// not every CubeBlock <Definition> has an xsi:Type :(
+// some of the definitions that don't have a subtype, DO have an xsiType -- but not all of them!
+// in Interiors:
+// passage (Interiors:7) has neither an xsiType nor a subtypeId
+// ladder2 (Interiors:820) is the same. Are they used in the game? probably!
+// so in this case, the last (LAST) option seems to be:
+// take the xsi:Type value from the blueprint (eg MyObjectBuilder_Passage),
+// strip off the "MyObjectBuilder_" prefix,
+// search for the result as a type id
+
+
+//xsi:Type values aren't unique!
+
+//so to sum up, it's a 3-stage search:
+// try looking by subtype.
+// if the blueprint block's subtype is empty,
+// try looking by xsiType.
+// and if THAT fails,
+// then it's either a passage or ladder2, so use the
+
 fun main() {
+    //the ordering of these init functions matters,
+    // because the later ones rely on data initialised in earlier ones
     initComponents()
     initLocalisation()
     initCubeBlockDefinitions()
