@@ -22,6 +22,7 @@ private val resDonor = object{}
 val allBlockData: MutableList<BlockData> = mutableListOf()
 val localisationStrings = mutableMapOf<String, String>()
 val components = mutableMapOf<String, Double>()
+val dlcBlockCounts = CountingMap<String>()
 
 var identical = 0//number of components where the xsiType is the same as the typId
 var empty = 0//number of components where the xsiType is empty
@@ -148,6 +149,10 @@ private fun initCubeBlockDefinitions() {
             }
 
             val dlc = block.getElementsByTag("DLC").firstOrNull()?.ownText()
+            dlc?.let {
+//                dlcBlockCounts.put(dlc, dlcBlockCounts.get(dlc)+1)
+                dlcBlockCounts[dlc] += 1
+            }
 
             allBlockData.add(BlockData(
                 typeId = typeId.ownText().replace("MyObjectBuilder_", ""),
@@ -162,6 +167,9 @@ private fun initCubeBlockDefinitions() {
             ))
         }
     }
+    println("blocks in each DLC:")
+    println(dlcBlockCounts.entries.joinToString(separator = "\n") { (key, value) -> "\t$key: $value"  })
+    println("total DLC blocks: "+dlcBlockCounts.values.sum())
 }
 
 private fun writeItAllOut() {
