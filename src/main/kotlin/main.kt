@@ -13,10 +13,12 @@ import org.w3c.files.FileReader
 // per-grid breakdown, percent of total ship
 // breakdown of blocks from DLCs: name, number & DLC of each
 // function to replace all DLC blocks in grid with non-DLC equivalents
-// hydrogen consumption:
-// time to accelerate to 100m/s (using forward thrusters) -- and time to decelerate to 0m/s (using backward thrusters)
-// seconds of thrust until depleted (hydrogen tanks and/or electricity)
-// power consumption:
+
+// not doing anymore:
+// hydrogen consumption
+//      time to accelerate to 100m/s (using forward thrusters) -- and time to decelerate to 0m/s (using backward thrusters)
+//      seconds of thrust until depleted (hydrogen tanks and/or electricity)
+// power consumption
 //      values are negative for consumption, positive for generation
 //      max power capacity
 //      time til drained when everything is running at full and no generators running

@@ -20,7 +20,6 @@ import java.io.IOException
 private val resDonor = object{}
 val allBlockData: MutableList<BlockData> = mutableListOf()
 val localisationStrings = mutableMapOf<String, String>()
-private val powerTags = mutableSetOf<String>()
 val components = mutableMapOf<String, Double>()
 
 var identical = 0//number of components where the xsiType is the same as the typId
@@ -28,31 +27,6 @@ var empty = 0//number of components where the xsiType is empty
 //TODO: railgun seems to be missing its recharge power data.
 // antenna is missing a powerinput or any other
 // possible leads: WeaponDefinitionId, ResourceSinkGroup, InventoryFillFactorMin
-
-val consumers = listOf(
-    "ConsumptionPower",
-    "RequiredPowerInput",
-    "PowerInput",
-)
-val idleOrMin = listOf(
-    "PowerConsumptionIdle",
-    "IdlePowerConsumption",
-    "PowerInputIdle",
-    "StandbyPowerConsumption",
-    "RequiredIdlePowerInput",
-    "MinSafeZonePowerDrainkW",
-    "BasePowerInput",
-    "MinPowerConsumption",
-)
-val activeOrMax = listOf(
-    "MaxBroadcastPowerDrainkw",
-    "PowerConsumptionMoving",
-    "OperationalPowerConsumption",
-    "PowerInputLasing",
-    "PowerInputTurning",
-    "MaxSafeZonePowerDrainkW",
-    "MaxPowerConsumption",
-)
 
 /**Some blocks don't correctly list PCU data. This function provides workarounds.
  * Blocks in CubeBlocks_Armor_2 are missing their PCU entry.
@@ -122,17 +96,11 @@ private fun initCubeBlockDefinitions() {
     /*val cubeBlocksXmlDocs: Map<String, Element> = cubeBlocksList.mapValues {
         Jsoup.parse(it.value).root()
     }*/
-    val foundBlocks = mutableListOf<String>()
     for((fileName, definitionsFile) in cubeBlocksXmlDocs) {
         val blockDefs: Element = definitionsFile.select("Definitions>CubeBlocks")
             .firstOrNull()?: throw Exception ("Block defs not found in $fileName")
         //println("${blockDefs.children().size} block defs in $file")
         for (block in blockDefs.children()) {
-            block.children().toList().filter {
-                it.tagName().lowercase().contains("power")
-            }.forEach {
-                powerTags.add(it.tagName())
-            }
             //I thought I could uniquely identify all blocks by just their subtypeid, but no
             val subtypeId = block.getElementsByTag("SubtypeId").firstOrNull()?.ownText()
                 ?: throw Exception("couldn't find subtype id in $fileName")
@@ -170,49 +138,12 @@ private fun initCubeBlockDefinitions() {
                 .replace("Definition", "")
                 .replace("MyObjectBuilder_", "")
 
-            val powerStorage:Int = block.getElementsByTag("MaxStoredPower")
-                .firstOrNull()?.ownText()?.toDouble()?.times(1000)?.toInt() ?: 0
-            val powerOutput:Int = block.getElementsByTag("MaxPowerOutput")
-                .firstOrNull()?.ownText()?.toDouble()?.times(1000)?.toInt() ?: 0
-
-            val minPowerInput = block.getPowerTag(idleOrMin)
-            val maxPowerInput = block.getPowerTag(activeOrMax)
             if(xsiType == typeId.ownText()) {
                 identical++
             } else if(xsiType.isEmpty()) {
                 empty++
             } else {
                 //println("xsiType for $humanName is $xsiType")
-            }
-
-            val consumerTags = block.surveyPowerTags(consumers)
-            val idleConsumptTags = block.surveyPowerTags(idleOrMin)
-            val activeConsumptTags = block.surveyPowerTags(activeOrMax)
-
-            if(consumerTags.isEmpty() && activeConsumptTags.isEmpty() && idleConsumptTags.isEmpty()) {
-                if(!humanName.lowercase().contains("armor") &&
-                    !subtypeId.lowercase().contains("symbol") &&
-                    !subtypeId.lowercase().contains("window") &&
-                    !subtypeId.lowercase().contains("neontubes") &&
-                    !subtypeId.lowercase().contains("warningsign") &&
-                    !subtypeId.lowercase().contains("beamblock") &&
-                    !subtypeId.lowercase().contains("conveyor") &&
-                    !subtypeId.lowercase().contains("deadbody") &&
-                    !subtypeId.lowercase().contains("rail") &&
-                    !subtypeId.lowercase().contains("stair") &&
-                    !humanName.lowercase().contains("reactor") &&
-                    !humanName.lowercase().contains(" part") &&
-                    !humanName.lowercase().contains("willis duct") &&
-                    !subtypeId.lowercase().contains("solarpanel") &&
-                    !subtypeId.lowercase().contains("passage") &&
-                    !subtypeId.lowercase().contains("catwalk")
-                ) {
-                    foundBlocks.add("${typeId.ownText()}/$subtypeId/$humanName, $blockSize block in $fileName")
-//                    println("\tconsumer tags: $consumerTags")
-//                    println("\tactive/max tags: $activeConsumptTags")
-//                    println("\tidle/min tags: $idleConsumptTags")
-//                    println()
-                }
             }
 
             allBlockData.add(BlockData(
@@ -224,38 +155,9 @@ private fun initCubeBlockDefinitions() {
                 components = components,
                 mass = components.calculateMass(),
                 xsiType = xsiType,
-                maxPowerOutputKw = powerOutput,
-                powerStorageKw = powerStorage,
-                pwrInputActiveMaxKw = maxPowerInput,
-                pwrInputIdleMinKw = minPowerInput,
             ))
         }
     }
-    println(foundBlocks.sorted().joinToString(separator = "\n") {it})
-    println("${foundBlocks.size} total" )
-}
-
-private fun Element.surveyPowerTags(tagList: List<String>): Map<String, String> {
-    val tagsOnBlock: MutableMap<String, String> = mutableMapOf()
-    for(tag in tagList) {
-        val tagValue = getElementsByTag(tag).firstOrNull()?.ownText()
-        if(tagValue != null) {
-            tagsOnBlock.put(tag, tagValue)
-        }
-    }
-    return tagsOnBlock
-}
-
-fun Element.getPowerTag(tagList:List<String>): Int {
-    val foundTags:List<Int> = tagList.mapNotNull { tag ->
-        val l = getElementsByTag(tag).firstOrNull()?.ownText()
-        if(l != null && !tag.lowercase().endsWith("kw")) {
-            l.toDouble().times(1000).toInt()
-        } else l?.toInt()
-    }
-    if(foundTags.isEmpty()) return 0
-    if(foundTags.size > 1) return foundTags.max()
-    return foundTags.first()
 }
 
 private fun writeItAllOut() {
