@@ -7,6 +7,7 @@ data class BlockData(
     val components: Map<String, Int>,
     val mass: Double,
     val size: Char,
+    val dlc: String? = null,
     val xsiType: String = "",
 ) {
     override fun toString(): String {
@@ -18,6 +19,7 @@ data class BlockData(
             "\tsize='$size',\n" +
             "\tmass=$mass,\n" +
             "\tpcu=$pcu,\n"+
+            (if (dlc == null) "" else "\tdlc=\"$dlc\",\n")+
             "\tcomponents=mapOf(" +components.entries.joinToString { (key, value) -> "\"$key\" to $value"}+
             ")\n" +
             ")"

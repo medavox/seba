@@ -6,14 +6,15 @@ import java.io.IOException
 
 /**
  * This file extracts the needed data (names, mass, PCU, components to build) from the game SBC files,
- * and outputs it as programmatically-generated Kotlin into the file `data.kt`.
+ * and outputs it as programmatically-generated Kotlin into the file `<root>/src/main/kotlin/generated/data.kt`.
  *
- * The Kotlin declares a data class for every CubeBlock in the game, containing the pertinent stats above.
+ * It declares a data class for every CubeBlock in the game, containing the pertinent stats above.
  *
  * It also copies the files containing the BlockData and CountingMap classes over to the web app module.
  * Not a pretty solution, but much more straightforward and easy to understand (and therefore maintain) than using gradle artifacts.
  *
- * All this is run on a desktop JVM before the actual web app is even compiled, so performance is less of an requirement.
+ * All this is run on a desktop JVM before the actual web app is even compiled,
+ * so performance is less of a requirement than in the web context.
  *
  * It's a totally separate execution environment from the web app itself.*/
 
@@ -118,7 +119,7 @@ private fun initCubeBlockDefinitions() {
             val xsiTypeSub = "${typeId.ownText()}/$subtypeId/$humanName"
             val pcu: Int? = block.getPcuWithFallback (fileName, xsiTypeSub)
             if(pcu == null) {
-                println("WARNING: couldn't find PCU for '${typeId.ownText()}/$subtypeId/$humanName', $blockSize block in $fileName")
+                println("WARNING: couldn't find PCU for '$xsiTypeSub', $blockSize block in $fileName")
                 continue
             }
 
@@ -127,7 +128,7 @@ private fun initCubeBlockDefinitions() {
             }
 
             val componentsRaw = block.getElementsByTag("Components").firstOrNull()?.children()?:
-            throw Exception("couldn't find Components for '${typeId.ownText()}/$subtypeId/$humanName' in $fileName")
+            throw Exception("couldn't find Components for '$xsiTypeSub' in $fileName")
 
             val components: CountingMap<String> = CountingMap<String>()
             componentsRaw.forEach { component ->
@@ -146,10 +147,13 @@ private fun initCubeBlockDefinitions() {
                 //println("xsiType for $humanName is $xsiType")
             }
 
+            val dlc = block.getElementsByTag("DLC").firstOrNull()?.ownText()
+
             allBlockData.add(BlockData(
                 typeId = typeId.ownText().replace("MyObjectBuilder_", ""),
                 subtypeId = subtypeId,
                 pcu = pcu,
+                dlc = dlc,
                 humanName = humanName,
                 size = if(blockSize == "Large") 'L' else 'S',
                 components = components,
