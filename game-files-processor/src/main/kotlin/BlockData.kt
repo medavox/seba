@@ -1,3 +1,5 @@
+data class BlockSize(val x: Int, val y:Int, val z:Int)
+
 /**Data retrieved from a block's <Definition> element in one of the CubeBlock Files.*/
 data class BlockData(
     val pcu: Int,
@@ -6,7 +8,8 @@ data class BlockData(
     val humanName: String,
     val components: Map<String, Int>,
     val mass: Double,
-    val size: Char,
+    val gridSize: Char,
+    val blockSize: BlockSize?=null,
     val dlc: String? = null,
     val xsiType: String = "",
 ) {
@@ -16,7 +19,8 @@ data class BlockData(
             (if(xsiType.isNotEmpty()) "\txsiType=\"$xsiType\",\n" else "") +
             "\tsubtypeId=\"$subtypeId\",\n" +
             "\thumanName=\"$humanName\",\n" +
-            "\tsize='$size',\n" +
+            "\tgridSize='$gridSize',\n" +
+            (if(blockSize == null) "" else "\tblockSize=BlockSize(${blockSize.x}, ${blockSize.y}, ${blockSize.z}),\n" )+
             "\tmass=$mass,\n" +
             "\tpcu=$pcu,\n"+
             (if (dlc == null) "" else "\tdlc=\"$dlc\",\n")+

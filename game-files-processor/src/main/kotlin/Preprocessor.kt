@@ -154,13 +154,22 @@ private fun initCubeBlockDefinitions() {
                 dlcBlockCounts[dlc] += 1
             }
 
+            val sizeAttrs = block.getElementsByTag("Size").firstOrNull()?.attributes()
+            val x = sizeAttrs?.get("x")?.toIntOrNull()
+            val y = sizeAttrs?.get("y")?.toIntOrNull()
+            val z = sizeAttrs?.get("z")?.toIntOrNull()
+
+
+
+
             allBlockData.add(BlockData(
                 typeId = typeId.ownText().replace("MyObjectBuilder_", ""),
                 subtypeId = subtypeId,
                 pcu = pcu,
                 dlc = dlc,
                 humanName = humanName,
-                size = if(blockSize == "Large") 'L' else 'S',
+                gridSize = if(blockSize == "Large") 'L' else 'S',
+                blockSize = if(x != null && y != null && z != null) BlockSize(x, y, z) else null,
                 components = components,
                 mass = components.calculateMass(),
                 xsiType = xsiType,
@@ -189,7 +198,7 @@ private fun writeItAllOut() {
     blockDataFile.copyTo(File(srcOutputDir, blockDataFileName), overwrite = true)
 
     val outputFile = File(outputDir, "data.kt")
-    outputFile.writeText("package generated\nimport BlockData\n")
+    outputFile.writeText("package generated\nimport BlockData\nimport BlockSize\n")
     outputFile.appendText(allBlockData.fold("val data=listOf(") { acc, blockData: BlockData ->
         "$acc$blockData, "
     }+")")
