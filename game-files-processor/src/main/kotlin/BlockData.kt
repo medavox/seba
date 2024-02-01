@@ -9,7 +9,7 @@ data class BlockData(
     val components: Map<String, Int>,
     val mass: Double,
     val gridSize: Char,
-    val blockSize: BlockSize?=null,
+    val dimensions: BlockSize?=null,
     val dlc: String? = null,
     val xsiType: String = "",
 ) {
@@ -20,7 +20,7 @@ data class BlockData(
             "\tsubtypeId=\"$subtypeId\",\n" +
             "\thumanName=\"$humanName\",\n" +
             "\tgridSize='$gridSize',\n" +
-            (if(blockSize == null) "" else "\tblockSize=BlockSize(${blockSize.x}, ${blockSize.y}, ${blockSize.z}),\n" )+
+            (if(dimensions == null) "" else "\tblockSize=BlockSize(${dimensions.x}, ${dimensions.y}, ${dimensions.z}),\n" )+
             "\tmass=$mass,\n" +
             "\tpcu=$pcu,\n"+
             (if (dlc == null) "" else "\tdlc=\"$dlc\",\n")+

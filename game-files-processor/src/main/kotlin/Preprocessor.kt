@@ -169,7 +169,7 @@ private fun initCubeBlockDefinitions() {
                 dlc = dlc,
                 humanName = humanName,
                 gridSize = if(blockSize == "Large") 'L' else 'S',
-                blockSize = if(x != null && y != null && z != null) BlockSize(x, y, z) else null,
+                dimensions = if(x != null && y != null && z != null) BlockSize(x, y, z) else null,
                 components = components,
                 mass = components.calculateMass(),
                 xsiType = xsiType,
