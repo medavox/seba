@@ -21,6 +21,9 @@ private fun Element.firstChildElementWithTag(tag: String): Element? {
 
 private fun Element.getGridName(): String = firstChildElementWithTag("DisplayName")?.textContent ?: "<no name found>"
 
+//<GridSizeEnum>Large</GridSizeEnum>
+private fun Element.getGridSizeFromGrid(): String = firstChildElementWithTag("GridSizeEnum")?.textContent ?: "<no size found>"
+
 private fun Element.countBlocksInGrid(): CountingMap<String> {
     val gridBlocks:List<Element> = firstChildElementWithTag("CubeBlocks")?.children?.asList() ?: throw NoSuchElementException("couldn't find blocks in grid")
     println("number of blocks in grid:"+gridBlocks.size)
