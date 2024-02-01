@@ -21,8 +21,8 @@ data class BlockData(
             (if(xsiType.isNotEmpty()) "\txsiType=\"$xsiType\",\n" else "") +
             "\tsubtypeId=\"$subtypeId\",\n" +
             "\thumanName=\"$humanName\",\n" +
-            "\tgridSize='$gridSize',\n" +
-            (if(dimensions == null) "" else "\tblockSize=BlockSize(${dimensions.x}, ${dimensions.y}, ${dimensions.z}),\n" )+
+            "\tgridSize=GridSize.$gridSize,\n" +
+            (if(dimensions == null) "" else "\tdimensions=BlockSize(${dimensions.x}, ${dimensions.y}, ${dimensions.z}),\n" )+
             "\tmass=$mass,\n" +
             "\tpcu=$pcu,\n"+
             (if (dlc == null) "" else "\tdlc=\"$dlc\",\n")+

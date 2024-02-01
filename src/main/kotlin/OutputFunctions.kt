@@ -81,6 +81,18 @@ fun HTMLTableElement.populateTotalsTable(total: Totals) {
         appendElement("td") { appendText("Large Blocks") }
         appendElement("td") { appendText(total.largeBlocks.asDynamic().toLocaleString() as String) }
     }
+    appendElement("tr") {
+        appendElement("td") { appendText("Total Grids (including root/main grid)") }
+        appendElement("td") { appendText((total.smallGrids + total.largeGrids).asDynamic().toLocaleString() as String) }
+    }
+    appendElement("tr") {
+        appendElement("td") { appendText("Total Large Grids") }
+        appendElement("td") { appendText(total.largeGrids.asDynamic().toLocaleString() as String) }
+    }
+    appendElement("tr") {
+        appendElement("td") { appendText("Total Small Grids") }
+        appendElement("td") { appendText(total.smallGrids.asDynamic().toLocaleString() as String) }
+    }
 }
 
 fun Document.resetPage() {

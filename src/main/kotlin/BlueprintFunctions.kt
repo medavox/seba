@@ -21,8 +21,13 @@ private fun Element.firstChildElementWithTag(tag: String): Element? {
 
 private fun Element.getGridName(): String = firstChildElementWithTag("DisplayName")?.textContent ?: "<no name found>"
 
-//<GridSizeEnum>Large</GridSizeEnum>
-private fun Element.getGridSizeFromGrid(): String = firstChildElementWithTag("GridSizeEnum")?.textContent ?: "<no size found>"
+private fun Element.getGridSizeFromGrid(): GridSize? {
+    return when (firstChildElementWithTag("GridSizeEnum")?.textContent) {
+        "Large" -> GridSize.LARGE
+        "Small" -> GridSize.SMALL
+        else -> null
+    }
+}
 
 private fun Element.countBlocksInGrid(): CountingMap<String> {
     val gridBlocks:List<Element> = firstChildElementWithTag("CubeBlocks")?.children?.asList() ?: throw NoSuchElementException("couldn't find blocks in grid")
@@ -48,11 +53,18 @@ fun XMLDocument.processBlueprint() {
     println("${cubeGridsElement.childNodes.length} grids in blueprint:"+grids.joinToString(separator = "\n") {
         it.getGridName()
     })
-    document.getElementById("blueprintName")?.textContent = "Stats for ${getBlueprintName()}"
+    document.getElementById("blueprintName")?.textContent = "Stats for '${getBlueprintName()}'"
     val blockCountByGrid = mutableMapOf<String, CountingMap<String>>()
     val totalBlockCounts = CountingMap<String>()
 
+    val total = Totals()
+
     for(grid in grids) {
+        when(grid.getGridSizeFromGrid()) {
+            GridSize.LARGE -> total.largeGrids++
+            GridSize.SMALL -> total.smallGrids++
+            else -> throw Exception("couldn't find grid size for grid '${grid.getGridName()}'!")
+        }
         val counts:CountingMap<String> = grid.countBlocksInGrid()
         totalBlockCounts += counts
         val gridName = grid.getGridName()
@@ -66,7 +78,6 @@ fun XMLDocument.processBlueprint() {
     println("totalBlockCounts size:"+totalBlockCounts.size)
     val blockDataCounts:Map<BlockData, Int> = totalBlockCounts.mapToBlockData()
     println("blockDataCounts size:"+blockDataCounts.size)
-    val total = Totals()
 
 
     blockDataCounts.entries.forEach { (blockData:BlockData, count: Int) ->
@@ -99,4 +110,10 @@ data class Totals(
     var pcu: Int = 0,
     var smallBlocks: Int = 0,
     var largeBlocks: Int = 0,
+    var smallGrids: Int = 0,
+    var largeGrids: Int = 0,
 )
+
+//totals: total grids (including root/main grid); number of small grids, number of large grids
+
+//name?, blocks, mass, pcu, small or large grid

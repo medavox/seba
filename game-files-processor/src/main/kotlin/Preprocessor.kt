@@ -196,7 +196,11 @@ private fun writeItAllOut() {
     blockDataFile.copyTo(File(srcOutputDir, blockDataFileName), overwrite = true)
 
     val outputFile = File(outputDir, "data.kt")
-    outputFile.writeText("package generated\nimport BlockData\nimport BlockSize\n")
+    outputFile.writeText("""package generated
+        |import BlockData
+        |import BlockSize
+        |import GridSize
+        |""".trimMargin())
     outputFile.appendText(allBlockData.fold("val data=listOf(") { acc, blockData: BlockData ->
         "$acc$blockData, "
     }+")")
