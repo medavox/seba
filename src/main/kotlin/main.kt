@@ -8,8 +8,7 @@ import org.w3c.files.FileReader
 
 //TODO:
 // display info including subgrids, without subgrids, and breakdown per grid
-// number of grids
-//  number of small, number of large, and whether the main grid is large or small
+//   whether the main grid is large or small
 // per-grid breakdown, percent of total ship (in blocks and mass)
 // breakdown of blocks from DLCs: name, number & DLC of each
 // function to replace all DLC blocks in grid with non-DLC equivalents

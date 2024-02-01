@@ -26,7 +26,7 @@ val dlcBlockCounts = CountingMap<String>()
 
 var identical = 0//number of components where the xsiType is the same as the typId
 var empty = 0//number of components where the xsiType is empty
-//TODO: railgun seems to be missing its recharge power data.
+// railgun seems to be missing its recharge power data.
 // antenna is missing a powerinput or any other
 // possible leads: WeaponDefinitionId, ResourceSinkGroup, InventoryFillFactorMin
 

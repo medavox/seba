@@ -21,7 +21,7 @@ fun Document.setupCollapsibleButton(buttonId: String, contentDivId: String) {
     })
 }
 
-fun Document.populateBreakdownTable(tableData:List<BlockRow>) {
+fun Document.populateBreakdownTable(tableData:List<BreakdownRow>) {
     val div = this.getElementById("breakdown_div") as HTMLDivElement
     val breakdownTable = this.getElementById("breakdown_table") as HTMLTableElement
     breakdownTable.clear()
@@ -93,6 +93,47 @@ fun HTMLTableElement.populateTotalsTable(total: Totals) {
         appendElement("td") { appendText("Total Small Grids") }
         appendElement("td") { appendText(total.smallGrids.asDynamic().toLocaleString() as String) }
     }
+}
+
+fun Document.populateSubgridsTable(tableData:List<BreakdownRow>) {
+    val div = this.getElementById("subgrids_div") as HTMLDivElement
+    val subgridsTable = this.getElementById("subgrids_table") as HTMLTableElement
+    subgridsTable.clear()
+
+    //name?, blocks, mass, pcu, small or large grid, % total blocks, % total mass, % total PCU
+    subgridsTable.appendElement("tr") {
+        //name, count, mass, pcu
+        appendElement("th") {appendText("Name")}.addEventListener("click", {
+            populateSubgridsTable(tableData.sortedBy { it.name })
+        })
+        appendElement("th") {appendText("Grid Size")}.addEventListener("click", {
+            populateSubgridsTable(tableData.sortedBy { it.name })
+        })
+        appendElement("th") {appendText("Blocks")}.addEventListener("click", {
+            populateSubgridsTable(tableData.sortedByDescending { it.count })
+        })
+        appendElement("th") {appendText("% Total Blocks")}.addEventListener("click", {
+            populateSubgridsTable(tableData.sortedByDescending { it.count })
+        })
+        appendElement("th") {appendText("Mass (kg)")}.addEventListener("click", {
+            populateSubgridsTable(tableData.sortedByDescending { it.mass })
+        })
+        appendElement("th") {appendText("% Total Mass")}.addEventListener("click", {
+            populateSubgridsTable(tableData.sortedByDescending { it.mass })
+        })
+        appendElement("th") {appendText("PCU")}.addEventListener("click", {
+            populateSubgridsTable(tableData.sortedByDescending { it.pcu })
+        })
+        appendElement("th") {appendText("% Total PCU")}.addEventListener("click", {
+            populateSubgridsTable(tableData.sortedByDescending { it.pcu })
+        })
+    }
+    for(row in tableData) {
+        row.toHtml(subgridsTable)
+    }
+
+    (this.getElementById("results") as HTMLDivElement).addClass("vizzibull")
+    div.style.maxHeight = div.scrollHeight.toString() + "px"
 }
 
 fun Document.resetPage() {

@@ -91,7 +91,7 @@ fun XMLDocument.processBlueprint() {
     }
 
     val dataRows = blockDataCounts.map { (block, count) ->
-        BlockRow(
+        BreakdownRow(
             name = block.humanName,
             count = count,
             mass = count * block.mass,
@@ -113,7 +113,3 @@ data class Totals(
     var smallGrids: Int = 0,
     var largeGrids: Int = 0,
 )
-
-//totals: total grids (including root/main grid); number of small grids, number of large grids
-
-//name?, blocks, mass, pcu, small or large grid
