@@ -1,5 +1,7 @@
 data class BlockSize(val x: Int, val y:Int, val z:Int)
 
+enum class GridSize { LARGE, SMALL }
+
 /**Data retrieved from a block's <Definition> element in one of the CubeBlock Files.*/
 data class BlockData(
     val pcu: Int,
@@ -8,7 +10,7 @@ data class BlockData(
     val humanName: String,
     val components: Map<String, Int>,
     val mass: Double,
-    val gridSize: Char,
+    val gridSize: GridSize,
     val dimensions: BlockSize?=null,
     val dlc: String? = null,
     val xsiType: String = "",

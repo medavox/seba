@@ -71,10 +71,8 @@ fun XMLDocument.processBlueprint() {
         total.pcu += (count * blockData.pcu)
 
         when (blockData.gridSize) {
-            'L' -> total.largeBlocks += count
-            'S' -> total.smallBlocks += count
-            else -> throw Exception("wtf blocksize is somehow still not 'L' or 'S' for ${blockData.humanName}! " +
-                    "it's ${blockData.gridSize}")
+            GridSize.LARGE -> total.largeBlocks += count
+            GridSize.SMALL -> total.smallBlocks += count
         }
     }
 

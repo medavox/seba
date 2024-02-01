@@ -160,15 +160,13 @@ private fun initCubeBlockDefinitions() {
             val z = sizeAttrs?.get("z")?.toIntOrNull()
 
 
-
-
             allBlockData.add(BlockData(
                 typeId = typeId.ownText().replace("MyObjectBuilder_", ""),
                 subtypeId = subtypeId,
                 pcu = pcu,
                 dlc = dlc,
                 humanName = humanName,
-                gridSize = if(blockSize == "Large") 'L' else 'S',
+                gridSize = if(blockSize == "Large") GridSize.LARGE else GridSize.SMALL,
                 dimensions = if(x != null && y != null && z != null) BlockSize(x, y, z) else null,
                 components = components,
                 mass = components.calculateMass(),
