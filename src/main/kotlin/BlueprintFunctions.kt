@@ -38,7 +38,7 @@ private fun Element.countBlocksInGrid(): CountingMap<String> {
     for(blockElement in gridBlocks) {
         val subtype = blockElement.firstChildElementWithTag("SubtypeName")?.textContent ?: throw Exception("block has no subtype!")
         val xsiType = blockElement.attributes.get("xsi:type")?.value?.replace("MyObjectBuilder_", "")?: ""
-
+        //fixme: we might be losing info on whether the block is Large or Small here
         blockCounts["$xsiType/$subtype"] += 1
         //println("blockCounts[$xsiType/$subtype] = "+blockCounts["$xsiType/$subtype"])
     }
@@ -49,12 +49,18 @@ fun XMLDocument.processBlueprint() {
     //in Definitions > ShipBlueprint > CubeGrids:
     val cubeGridsElement: Element = querySelector("Definitions > ShipBlueprints > ShipBlueprint > CubeGrids")
         ?: throw Exception("couldn't find CubeGrids element!")
+    /**A list of all the grids in the blueprint*/
     val grids = cubeGridsElement.childElementsWithTag("CubeGrid")
     println("${cubeGridsElement.childNodes.length} grids in blueprint:"+grids.joinToString(separator = "\n") {
         it.getGridName()
     })
     document.getElementById("blueprintName")?.textContent = "Stats for '${getBlueprintName()}'"
+    /**Grid name -> how many of each type of block (blocks are strings).
+     *
+     * Not really used for anything yet*/
     val blockCountByGrid = mutableMapOf<String, CountingMap<String>>()
+
+    /**How many (TOTAL) of each type of block (represented by a string) the blueprint contains */
     val totalBlockCounts = CountingMap<String>()
 
     val total = Totals()
@@ -65,9 +71,11 @@ fun XMLDocument.processBlueprint() {
             GridSize.SMALL -> total.smallGrids++
             else -> throw Exception("couldn't find grid size for grid '${grid.getGridName()}'!")
         }
+        /**temp-scope val of the count of all blocks in this grid*/
         val counts:CountingMap<String> = grid.countBlocksInGrid()
         totalBlockCounts += counts
         val gridName = grid.getGridName()
+        //names of grids aren't necessarily unique, so append ' copy' if it's already in there when it shouldn't be
         if(!blockCountByGrid.containsKey(gridName)) {
             blockCountByGrid.put(grid.getGridName(), counts)
         } else {
@@ -76,11 +84,12 @@ fun XMLDocument.processBlueprint() {
     }
 
     println("totalBlockCounts size:"+totalBlockCounts.size)
-    val blockDataCounts:Map<BlockData, Int> = totalBlockCounts.mapToBlockData()
-    println("blockDataCounts size:"+blockDataCounts.size)
+    /**Total block counts, but where block-as-string has been mapped to a BlockData*/
+    val totalCountsAsBlockData:Map<BlockData, Int> = totalBlockCounts.mapToBlockData()
+    println("blockDataCounts size:"+totalCountsAsBlockData.size)
 
 
-    blockDataCounts.entries.forEach { (blockData:BlockData, count: Int) ->
+    totalCountsAsBlockData.entries.forEach { (blockData:BlockData, count: Int) ->
         total.mass += (count * blockData.mass)
         total.pcu += (count * blockData.pcu)
 
@@ -90,7 +99,7 @@ fun XMLDocument.processBlueprint() {
         }
     }
 
-    val dataRows = blockDataCounts.map { (block, count) ->
+    val dataRows = totalCountsAsBlockData.map { (block, count) ->
         BreakdownRow(
             name = block.humanName,
             count = count,
@@ -105,6 +114,7 @@ fun XMLDocument.processBlueprint() {
     totalsTable.populateTotalsTable(total)
 }
 
+/**Overarching data structure for the 'totals' table*/
 data class Totals(
     var mass: Double = 0.0,
     var pcu: Int = 0,

@@ -1,14 +1,13 @@
 #!/bin/bash -x
-
+# switch to main branch if we're not on it already
 branch=$(git branch --show-current)
 git stash
-if [[ $branch == "main" ]] ; then
-  ./gradlew browserProductionWebpack
-else
+if [[ $branch != "main" ]] ; then
   git checkout main
 fi
 
 branch=$(git branch --show-current)
+# did we successfully switch to main?
 if [[ $branch == "main" ]] ; then
   ./gradlew browserProductionWebpack
 else

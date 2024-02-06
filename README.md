@@ -2,7 +2,9 @@
 
 A Kotlin/JS web app to produce useful stats about your Space Engineers blueprint.
 
-Is your blueprint too heavy? Does it have too high a PCU? this app can help.
+Is your blueprint too heavy? Does it have too high a PCU? 
+
+This small web app can help you find the greatest contributors.
 
 It extracts data directly from the game files before compiling to javascript, 
 so it's easy to keep up to date AND runs pretty fast without need for a backend. 
