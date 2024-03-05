@@ -19,13 +19,22 @@ open class CountingMap<K>(
     override fun put(key: K, value: Int): Int = backingMap.put(key, value) ?: 0
 
     override fun putAll(from: Map<out K, Int>) = from.forEach {
-        backingMap.put(it.key, it.value)
+        println("putAll")
+        for((key, count) in from) {
+            if(backingMap.containsKey(key)) {
+                val currentCount = get(key)
+                backingMap.put(key, currentCount + count)
+            } else {
+                backingMap.put(key, count)
+            }
+        }
     }
 
     override fun remove(key: K): Int = backingMap.remove(key) ?: 0
     override fun toString(): String = backingMap.toString()
 
     operator fun plus(other: CountingMap<K>): CountingMap<K> {
+        println("plus")
         val newMap = CountingMap<K>()
         newMap.putAll(this)
         for((key, count) in other) {
@@ -40,12 +49,13 @@ open class CountingMap<K>(
     }
 
     operator fun plusAssign(other: CountingMap<K>) {
+        println("plusAssign")
         for((key, count) in other) {
             if(containsKey(key)) {
                 val currentCount = get(key)
-                put(key, currentCount + count)
+                backingMap.put(key, currentCount + count)
             } else {
-                put(key, count)
+                backingMap.put(key, count)
             }
         }
     }
