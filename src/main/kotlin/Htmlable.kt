@@ -1,5 +1,5 @@
 import org.w3c.dom.HTMLTableElement
 
-interface TableRow {
+interface Htmlable {
     fun toHtml(table: HTMLTableElement)
 }
