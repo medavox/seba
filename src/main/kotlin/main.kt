@@ -91,7 +91,6 @@ fun main() {
     })
     document.setupCollapsibleButton("breakdown_button", "breakdown_div")
     document.setupCollapsibleButton("totals_button", "totals_div")
-    document.setupCollapsibleButton("power_stats_button", "power_stats_div")
-    document.setupCollapsibleButton("subgrids_button", "subgrids_div")
     document.setupCollapsibleButton("components_button", "components_div")
+    document.setupCollapsibleButton("subgrids_button", "subgrids_div")
 }
