@@ -12,6 +12,25 @@ import org.w3c.files.FileReader
 // per-grid breakdown, percent of total ship (in blocks and mass)
 // breakdown of blocks from DLCs: name, number & DLC of each
 // function to replace all DLC blocks in grid with non-DLC equivalents
+// for each thrust direction of a ship (fwd, bk, up, dn, left, right), calculate:
+//      can I move in atmo?
+//      can I move in space?
+//      can I lift off in 1g?
+//          when empty
+//          when full of ore
+//          when full of densest material
+//      highest gravity I can lift off in?
+//          when empty
+//          when full of ore
+//          when full of densest material
+//      stopping distance in 0g
+//          when empty
+//          when full of ore
+//          when full of densest material
+//      time 0-100m/s in 0g
+//          when empty
+//          when full of ore
+//          when full of densest material
 
 // not doing anymore:
 // hydrogen consumption
@@ -73,4 +92,6 @@ fun main() {
     document.setupCollapsibleButton("breakdown_button", "breakdown_div")
     document.setupCollapsibleButton("totals_button", "totals_div")
     document.setupCollapsibleButton("power_stats_button", "power_stats_div")
+    document.setupCollapsibleButton("subgrids_button", "subgrids_div")
+    document.setupCollapsibleButton("components_button", "components_div")
 }
