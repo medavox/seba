@@ -88,14 +88,21 @@ fun XMLDocument.processBlueprint() {
     val totalCountsAsBlockData:Map<BlockData, Int> = totalBlockCounts.mapToBlockData()
     println("blockDataCounts size:"+totalCountsAsBlockData.size)
 
+    val totalComponentsNeeded = CountingMap<String>()
 
-    totalCountsAsBlockData.entries.forEach { (blockData:BlockData, count: Int) ->
+    totalCountsAsBlockData.entries.forEach { (blockData: BlockData, count: Int) ->
         total.mass += (count * blockData.mass)
         total.pcu += (count * blockData.pcu)
 
         when (blockData.gridSize) {
             GridSize.LARGE -> total.largeBlocks += count
             GridSize.SMALL -> total.smallBlocks += count
+        }
+        var countdown = count
+        while(countdown > 0) {
+            totalComponentsNeeded += blockData.components
+            countdown--
+            //println("con comps:  ${totalComponentsNeeded["Construction"]}")
         }
     }
 
@@ -112,6 +119,9 @@ fun XMLDocument.processBlueprint() {
     //populate totals table
     val totalsTable = document.getElementById("totals_table") as HTMLTableElement
     totalsTable.populateTotalsTable(total)
+
+    //document.populateSubgridsTable()
+    document.populateComponentsTable(totalComponentsNeeded.toList())
 }
 
 /**Overarching data structure for the 'totals' table*/

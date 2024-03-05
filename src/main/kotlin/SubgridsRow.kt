@@ -6,7 +6,7 @@ data class SubgridsRow(val name: String, val gridSize: GridSize,
                        val blocks: Int, val percentTotalBlocks:String,
                        val mass : Double, val percentTotalMass: String,
                        val pcu: Int, val percentTotalPcu: String
-) : TableRow {
+) : Htmlable {
     override fun toHtml(table: HTMLTableElement) {
         table.appendElement("tr") {
 

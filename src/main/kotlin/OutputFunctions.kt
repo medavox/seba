@@ -62,7 +62,7 @@ fun HTMLTableElement.populateTotalsTable(total: Totals) {
         }
     }
     appendElement("tr") {
-        appendElement("td") { appendText("Total Mass") }
+        appendElement("td") { appendText("Total Mass (kg)") }
         appendElement("td") { appendText(total.mass.asDynamic().toLocaleString() as String) }
     }
     appendElement("tr") {
@@ -130,6 +130,32 @@ fun Document.populateSubgridsTable(tableData:List<BreakdownRow>) {
     }
     for(row in tableData) {
         row.toHtml(subgridsTable)
+    }
+
+    (this.getElementById("results") as HTMLDivElement).addClass("vizzibull")
+    div.style.maxHeight = div.scrollHeight.toString() + "px"
+}
+
+fun Document.populateComponentsTable(tableData:List<Pair<String, Int>>) {
+    val div = this.getElementById("components_div") as HTMLDivElement
+    val componentsTable = this.getElementById("components_table") as HTMLTableElement
+    componentsTable.clear()
+
+    //name?, blocks, mass, pcu, small or large grid, % total blocks, % total mass, % total PCU
+    componentsTable.appendElement("tr") {
+        //name, count, mass, pcu
+        appendElement("th") {appendText("Component")}.addEventListener("click", {
+            populateComponentsTable(tableData.sortedBy { it.first })
+        })
+        appendElement("th") {appendText("Total")}.addEventListener("click", {
+            populateComponentsTable(tableData.sortedByDescending { it.second })
+        })
+    }
+    for(row in tableData) {
+        componentsTable.appendElement("tr") {
+            componentsTable.appendElement("td") { appendText(row.first.asDynamic().toLocaleString() as String) }
+            componentsTable.appendElement("td") { appendText(row.second.asDynamic().toLocaleString() as String) }
+        }
     }
 
     (this.getElementById("results") as HTMLDivElement).addClass("vizzibull")
