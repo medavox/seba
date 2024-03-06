@@ -23,7 +23,7 @@ val allBlockData: MutableList<BlockData> = mutableListOf()
 val allRecipeData: MutableList<RecipeData> = mutableListOf()
 val localisationStrings = mutableMapOf<String, String>()
 val components = mutableMapOf<String, Double>()
-val dlcBlockCounts = CountingMap<String>()
+val dlcBlockCounts:CountingMap<String> = mutableMapOf()
 
 var identical = 0//number of components where the xsiType is the same as the typId
 var empty = 0//number of components where the xsiType is empty
@@ -177,9 +177,9 @@ private fun initCubeBlockDefinitions() {
             val componentsRaw = block.getElementsByTag("Components").firstOrNull()?.children()?:
             throw Exception("couldn't find Components for '$xsiTypeSub' in $fileName")
 
-            val components: CountingMap<String> = CountingMap<String>()
+            val components: CountingMap<String> = mutableMapOf()
             componentsRaw.forEach { component ->
-                components[component.attr("Subtype")] += component.attr("Count").toInt()
+                components.addCount(component.attr("Subtype"), component.attr("Count").toInt())
             }
 
             val xsiType = block.attr("xsi:type")
@@ -197,7 +197,7 @@ private fun initCubeBlockDefinitions() {
             val dlc = block.getElementsByTag("DLC").firstOrNull()?.ownText()
             dlc?.let {
 //                dlcBlockCounts.put(dlc, dlcBlockCounts.get(dlc)+1)
-                dlcBlockCounts[dlc] += 1
+                dlcBlockCounts.addCount(dlc, 1)
             }
 
             val sizeAttrs = block.getElementsByTag("Size").firstOrNull()?.attributes()
