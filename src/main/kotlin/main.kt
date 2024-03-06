@@ -10,11 +10,17 @@ import org.w3c.files.FileReader
 // display info including subgrids, without subgrids, and breakdown per grid
 //   whether the main grid is large or small
 // per-grid breakdown, percent of total ship (in blocks and mass)
+// time to produce all components
+// constructible with survival kit?
+// constructible with basic assembler? (is that any different to a full assembler?)
+// constructible with basic refinery?
+// a button to download the report in Steam Workshop format
 // breakdown of blocks from DLCs: name, number & DLC of each
 // function to replace all DLC blocks in grid with non-DLC equivalents
-// for each thrust direction of a ship (fwd, bk, up, dn, left, right), calculate:
+// for each thrust direction of a ship (forward, back, up, down, left, right), calculate:
 //      can I move in atmo?
 //      can I move in space?
+//      max takeoff weight in 1g
 //      can I lift off in 1g?
 //          when empty
 //          when full of ore
