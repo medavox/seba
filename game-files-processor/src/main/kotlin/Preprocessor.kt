@@ -20,6 +20,7 @@ import java.io.IOException
 
 private val resDonor = object{}
 val allBlockData: MutableList<BlockData> = mutableListOf()
+val allRecipeData: MutableList<RecipeData> = mutableListOf()
 val localisationStrings = mutableMapOf<String, String>()
 val components = mutableMapOf<String, Double>()
 val dlcBlockCounts = CountingMap<String>()
@@ -85,6 +86,51 @@ private fun initLocalisation() {
 
 private fun Map<String, Int>.calculateMass(): Double = entries.fold(0.0) { acc, (name, count) ->
     acc + (count * (components[name] ?: 0.0) )
+}
+
+private fun initRecipeData():List<RecipeData> {
+    val doc = Jsoup.parse(readResource("Blueprints.sbc")).root()
+    val entries = doc.getElementsByTag("Blueprint")
+    println("component entries: ${entries.size}")
+    for(entry in entries) {
+        val recipeName = entry.getElementsByTag("SubtypeId").firstOrNull()?.ownText()
+            ?: throw Exception("couldn't find subtype id for a component!")
+        val displayName = entry.getElementsByTag("DisplayName").firstOrNull()?.ownText()
+            ?: throw Exception("couldn't find display name for component $recipeName!")
+
+        val prodTime = entry.getElementsByTag("BaseProductionTimeInSeconds").firstOrNull()?.ownText()
+            ?: throw Exception("couldn't find production time for component $recipeName!")
+
+        //skip recipes which produce multiple results, as they're stone recipes we don't care about (atm)
+        val resultsWhichShouldBeNull = entry.getElementsByTag("Results").firstOrNull()
+        if(resultsWhichShouldBeNull != null) continue
+
+        val result = entry.getElementsByTag("Result").firstOrNull()
+            ?: throw Exception("couldn't find result name for component $recipeName!")
+
+        val prereqs = entry.getElementsByTag("Prerequisites").firstOrNull()?.children()
+            ?: throw Exception("couldn't find prereqs for component $recipeName!")
+
+        println("prereqs elem for '$recipeName': ${prereqs.size}")
+
+        val prereqsMapx1000:Map<String, Int> = prereqs.associate { item ->
+            item.attr("SubtypeId") to
+                    (item.attr("Amount").toDoubleOrNull()?.times(1000)?:0).toInt()
+        }
+
+        println("prereqs for '$recipeName': ${prereqsMapx1000.size}")
+
+        allRecipeData.add(RecipeData(
+            humanName = localisationStrings[displayName] ?: "<null>",
+            recipeName = recipeName,
+            resultName = result.attr("SubtypeId"),
+            displayName = displayName,
+            recipeAmountsx1000 =  prereqsMapx1000,
+            resultAmountx1000 = (result.attr("Amount").toDoubleOrNull()?.times(1000) ?: 0).toInt(),
+            productionTimeMs = (prodTime.toDoubleOrNull()?.times(1000) ?: -1).toInt()
+        ))
+    }
+    return allRecipeData
 }
 
 private fun initCubeBlockDefinitions() {
@@ -182,6 +228,8 @@ private fun initCubeBlockDefinitions() {
 private fun writeItAllOut() {
     val countingMapFileName = "CountingMap.kt"
     val blockDataFileName = "BlockData.kt"
+    val recipeDataFileName = "RecipeData.kt"
+
     val srcOutputDir = File(".", "src/main/kotlin")
     val outputDir = File(srcOutputDir, "generated")
     val processorSrc = File(".", "game-files-processor/src/main/kotlin")
@@ -191,18 +239,28 @@ private fun writeItAllOut() {
     //copy over needed kotlin files to js module
     val countingMapFile = File(processorSrc, countingMapFileName)
     val blockDataFile = File(processorSrc, blockDataFileName)
+    val recipeDataFile = File(processorSrc, recipeDataFileName)
 
     countingMapFile.copyTo(File(srcOutputDir, countingMapFileName), overwrite = true)
     blockDataFile.copyTo(File(srcOutputDir, blockDataFileName), overwrite = true)
+    recipeDataFile.copyTo(File(srcOutputDir, recipeDataFileName), overwrite = true)
 
-    val outputFile = File(outputDir, "data.kt")
-    outputFile.writeText("""package generated
+    val dataOutputFile = File(outputDir, "data.kt")
+    dataOutputFile.writeText("""package generated
         |import BlockData
         |import BlockSize
         |import GridSize
         |""".trimMargin())
-    outputFile.appendText(allBlockData.fold("val data=listOf(") { acc, blockData: BlockData ->
+    dataOutputFile.appendText(allBlockData.fold("val data=listOf(") { acc, blockData: BlockData ->
         "$acc$blockData, "
+    }+")")
+
+    val recipesOutputFile = File(outputDir, "recipes.kt")
+    recipesOutputFile.writeText("""package generated
+        |import RecipeData
+        |""".trimMargin())
+    recipesOutputFile.appendText(allRecipeData.fold("val recipes=listOf(") { acc, recipeData: RecipeData ->
+        "$acc$recipeData, "
     }+")")
 }
 
@@ -247,6 +305,7 @@ fun main() {
     // because the later ones rely on data initialised in earlier ones
     initComponents()
     initLocalisation()
+    initRecipeData()
     initCubeBlockDefinitions()
     println("all block data:"+allBlockData.size)
     println("number of components where the xsiType is the same as the typId: $identical")

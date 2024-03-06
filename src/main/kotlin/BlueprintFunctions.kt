@@ -122,6 +122,7 @@ fun XMLDocument.processBlueprint() {
 
     //document.populateSubgridsTable()
     document.populateComponentsTable(totalComponentsNeeded.toList())
+    //document.populateSubgridsTable()
 }
 
 /**Overarching data structure for the 'totals' table*/
