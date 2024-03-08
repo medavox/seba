@@ -33,13 +33,14 @@ private fun Element.countBlocksInGrid(): CountingMap<String> {
     val gridBlocks:List<Element> = firstChildElementWithTag("CubeBlocks")?.children?.asList() ?: throw NoSuchElementException("couldn't find blocks in grid")
     println("number of blocks in grid:"+gridBlocks.size)
     //right, now let's get to work
-    val blockCounts = CountingMap<String>()
+    val blockCounts: CountingMap<String> = mutableMapOf()
 
     for(blockElement in gridBlocks) {
         val subtype = blockElement.firstChildElementWithTag("SubtypeName")?.textContent ?: throw Exception("block has no subtype!")
         val xsiType = blockElement.attributes.get("xsi:type")?.value?.replace("MyObjectBuilder_", "")?: ""
         //fixme: we might be losing info on whether the block is Large or Small here
-        blockCounts["$xsiType/$subtype"] += 1
+        //  we're not losing info, because each block has a unique name, even across both sizes
+        blockCounts.addCount("$xsiType/$subtype", 1)
         //println("blockCounts[$xsiType/$subtype] = "+blockCounts["$xsiType/$subtype"])
     }
     return blockCounts
@@ -61,7 +62,7 @@ fun XMLDocument.processBlueprint() {
     val blockCountByGrid = mutableMapOf<String, CountingMap<String>>()
 
     /**How many (TOTAL) of each type of block (represented by a string) the blueprint contains */
-    val totalBlockCounts = CountingMap<String>()
+    val totalBlockCounts: CountingMap<String> = mutableMapOf()
 
     val total = Totals()
 
@@ -88,8 +89,7 @@ fun XMLDocument.processBlueprint() {
     val totalCountsAsBlockData:Map<BlockData, Int> = totalBlockCounts.mapToBlockData()
     println("blockDataCounts size:"+totalCountsAsBlockData.size)
 
-    val totalComponentsNeeded = CountingMap<String>()
-
+    val totalComponentsNeeded: CountingMapLong<String> = mutableMapOf()
     totalCountsAsBlockData.entries.forEach { (blockData: BlockData, count: Int) ->
         total.mass += (count * blockData.mass)
         total.pcu += (count * blockData.pcu)
@@ -100,7 +100,7 @@ fun XMLDocument.processBlueprint() {
         }
         var countdown = count
         while(countdown > 0) {
-            totalComponentsNeeded += blockData.components
+            totalComponentsNeeded.addCount(blockData.components)
             countdown--
             //println("con comps:  ${totalComponentsNeeded["Construction"]}")
         }
