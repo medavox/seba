@@ -1,3 +1,4 @@
+import generated.recipes
 import kotlinx.dom.*
 import org.w3c.dom.Document
 import org.w3c.dom.HTMLButtonElement
@@ -136,7 +137,7 @@ fun Document.populateSubgridsTable(tableData:List<BreakdownRow>) {
     div.style.maxHeight = div.scrollHeight.toString() + "px"
 }
 
-fun Document.populateComponentsTable(tableData:List<Pair<String, Int>>) {
+fun Document.populateComponentsTable(tableData:List<Pair<String, Long>>) {
     val div = this.getElementById("components_div") as HTMLDivElement
     val componentsTable = this.getElementById("components_table") as HTMLTableElement
     componentsTable.clear()

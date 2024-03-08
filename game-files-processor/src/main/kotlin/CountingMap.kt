@@ -27,7 +27,7 @@ typealias CountingMap<K> = MutableMap<K, Int>
         newMap.putAllCount(this)
         for((key, count) in other) {
             if(newMap.containsKey(key)) {
-                val currentCount = this.getCount(key)
+                val currentCount = getCount(key)
                 newMap.putCount(key, currentCount + count)
             } else {
                 newMap.putCount(key, count)

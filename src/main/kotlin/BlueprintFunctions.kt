@@ -1,3 +1,4 @@
+import generated.recipes
 import kotlinx.browser.document
 import org.w3c.dom.*
 
@@ -74,7 +75,7 @@ fun XMLDocument.processBlueprint() {
         }
         /**temp-scope val of the count of all blocks in this grid*/
         val counts:CountingMap<String> = grid.countBlocksInGrid()
-        totalBlockCounts += counts
+        totalBlockCounts.putAllCount(counts)
         val gridName = grid.getGridName()
         //names of grids aren't necessarily unique, so append ' copy' if it's already in there when it shouldn't be
         if(!blockCountByGrid.containsKey(gridName)) {
@@ -98,11 +99,22 @@ fun XMLDocument.processBlueprint() {
             GridSize.LARGE -> total.largeBlocks += count
             GridSize.SMALL -> total.smallBlocks += count
         }
-        var countdown = count
+        blockData.components.forEach { (name, amount) ->
+            totalComponentsNeeded.putCount(name, amount.toLong() * count)
+        }
+/*        var countdown = count
         while(countdown > 0) {
-            totalComponentsNeeded.addCount(blockData.components)
+            totalComponentsNeeded.putAllCount(blockData.components)
             countdown--
             //println("con comps:  ${totalComponentsNeeded["Construction"]}")
+        }*/
+    }
+
+    val totalIngotsNeeded = mutableMapOf<String, Long>()
+    totalComponentsNeeded.entries.forEach { (name: String, count: Long) ->
+        val recipe = recipes.firstOrNull { it.resultName == name} //todo: handle null properly
+        recipe?.recipeAmountsx1000?.forEach { (name, amount) ->
+            totalIngotsNeeded.putCount(name, count * amount )
         }
     }
 
@@ -120,9 +132,9 @@ fun XMLDocument.processBlueprint() {
     val totalsTable = document.getElementById("totals_table") as HTMLTableElement
     totalsTable.populateTotalsTable(total)
 
-    //document.populateSubgridsTable()
     document.populateComponentsTable(totalComponentsNeeded.toList())
-    //document.populateSubgridsTable()
+    document.populateIngotsTable(totalIngotsNeeded.toList())
+    //document.populateSubgridsTable()//todo
 }
 
 /**Overarching data structure for the 'totals' table*/

@@ -85,3 +85,32 @@ typealias CountingMapLong<K> = MutableMap<K, Long>
             }
         }
     }
+
+fun <K> CountingMapLong<K>.addNicely(other: Map<K, Int>) {
+    for((key, count) in other) {
+        if(containsKey(key)) {
+            val currentCount = this[key]!!
+            put(key, currentCount + count)
+        } else {
+            put(key, count.toLong())
+        }
+    }
+}
+
+fun <K> CountingMapLong<K>.addNicely(key:K, count:Int) {
+    if(containsKey(key)) {
+        val currentCount = this[key]!!
+        put(key, currentCount + count)
+    } else {
+        put(key, count.toLong())
+    }
+}
+
+fun <K> CountingMapLong<K>.addNicely(key:K, count:Long) {
+    if(containsKey(key)) {
+        val currentCount = this[key]!!
+        put(key, currentCount + count)
+    } else {
+        put(key, count.toLong())
+    }
+}
