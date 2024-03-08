@@ -152,6 +152,33 @@ fun Document.populateComponentsTable(tableData:List<Pair<String, Int>>) {
         })
     }
     for(row in tableData) {
+        val humanName = recipes.firstOrNull{it.resultName == row.first}?.humanName ?: row.first
+        componentsTable.appendElement("tr") {
+            componentsTable.appendElement("td") { appendText(humanName.asDynamic().toLocaleString() as String) }
+            componentsTable.appendElement("td") { appendText(row.second.asDynamic().toLocaleString() as String) }
+        }
+    }
+
+    (this.getElementById("results") as HTMLDivElement).addClass("vizzibull")
+    div.style.maxHeight = div.scrollHeight.toString() + "px"
+}
+
+fun Document.populateIngotsTable(tableData:List<Pair<String, Long>>) {
+    val div = this.getElementById("ingots_div") as HTMLDivElement
+    val componentsTable = this.getElementById("ingots_table") as HTMLTableElement
+    componentsTable.clear()
+
+    //name?, blocks, mass, pcu, small or large grid, % total blocks, % total mass, % total PCU
+    componentsTable.appendElement("tr") {
+        //name, count, mass, pcu
+        appendElement("th") {appendText("Ingot")}.addEventListener("click", {
+            populateComponentsTable(tableData.sortedBy { it.first })
+        })
+        appendElement("th") {appendText("Total")}.addEventListener("click", {
+            populateComponentsTable(tableData.sortedByDescending { it.second })
+        })
+    }
+    for(row in tableData) {
         componentsTable.appendElement("tr") {
             componentsTable.appendElement("td") { appendText(row.first.asDynamic().toLocaleString() as String) }
             componentsTable.appendElement("td") { appendText(row.second.asDynamic().toLocaleString() as String) }
