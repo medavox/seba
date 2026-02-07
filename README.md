@@ -15,10 +15,11 @@ You need to provide the project with some game files before compilation.
 
 1. Put the following files in `game-files-processor/src/main/resources/`:
 
-
+```
     Content/Data/Components.sbc
     Content/Data/CubeBlocks/ (the entire directory)
     Content/Data/Localization/MyTexts.resx
+```
 
 *You can provide a different `MyTexts.resx` file if you want block names in another language.*
 
